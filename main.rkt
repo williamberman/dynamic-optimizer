@@ -1,10 +1,16 @@
 #lang racket
 
-(require "fib.rkt")
 (require "utils.rkt")
 (require "wrappers.rkt")
 (require data/gvector)
 (require "optimizations.rkt")
+
+;; TODO I'd like to be able to wrap a procedure located in its own module
+(define fib
+  (annotated-lambda (n)
+                    (cond ((= n 0) 0)
+                          ((= n 1) 1)
+                          (#t (+ (fib (- n 1)) (fib (- n 2)))))))
 
 (define (test)
   (install! 'fib (with-call-graph-save-and-display fib "/tmp/call-graph.dot"))

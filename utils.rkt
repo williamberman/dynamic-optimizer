@@ -16,7 +16,7 @@
 
 (define (around #:fn fn #:before before #:after after)
   (define (wrapped . args)
-    (define return-value (match (apply before args)
+    (define return-value (match (keyword-apply before '(#:args) (list args) (list))
                            [(list 'return-value rv) rv]
                            [_ (apply fn args)]))
     (apply after (list) #:args args #:return-value return-value)

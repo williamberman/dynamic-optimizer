@@ -8,8 +8,8 @@
 
 (define (get-optimization call-graph annotated-procedure)
   (cond
-    ([(can-make-bottom-up-constant-space-procedure? call-graph)
-      (eval `(annotated-lambda ,@(make-bottom-up-constant-space-procedure
-                                  (call-graph->all-arguments-bottom-up call-graph)
-                                  (get-subproblem-combination-function annotated-procedure))))]
-     [#t #f])))
+    [(can-make-bottom-up-constant-space-procedure? call-graph)
+     (eval `(annotated-lambda () ,@(make-bottom-up-constant-space-procedure
+                                    (call-graph->all-arguments-bottom-up call-graph)
+                                    (get-subproblem-combination-function annotated-procedure))))]
+    [#t #f]))
