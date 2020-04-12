@@ -12,7 +12,7 @@
  with-call-graph-save-and-display
  call-graphs
  with-optimizer
- optimizers)
+ optimized-procedure-optimizer)
 
 (define (with-call-graph fn visit-completed-call-graph)
   (define call-graph-builder (make-call-graph-builder))
@@ -42,7 +42,8 @@
       (display (graphviz call-graph) out))
     #:exists 'replace))
 
-(define optimizers (make-weak-hash))
+(struct optimized-procedure (procedure optimizer)
+  #:property prop:procedure (struct-field-index procedure))
 
 (define (with-optimizer fn)
   (define call-graph-builder (make-call-graph-builder))
@@ -54,11 +55,10 @@
   (define (after #:args args #:return-value return-value)
     (call-graph-builder-post-call call-graph-builder #:args args #:return-value return-value)
     (when (call-graph-builder-is-complete? call-graph-builder)
-      (define optimization (get-optimization (call-graph-builder-call-graph call-graph-builder)))
+      (define optimization (get-optimization (call-graph-builder-call-graph call-graph-builder) fn))
       (when optimization
         (optimizer-add-possible-optimization! optimizer args optimization))
       (set! call-graph-builder (make-call-graph-builder))))
 
-  (define return-value (around #:before before #:after after #:fn optimizer))
-  (hash-set! optimizers return-value optimizer)
-  return-value)
+  (define procedure (around #:before before #:after after #:fn optimizer))
+  (optimized-procedure procedure optimizer))
