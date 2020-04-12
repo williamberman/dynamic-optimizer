@@ -45,9 +45,11 @@
 (struct optimized-procedure (procedure optimizer)
   #:property prop:procedure (struct-field-index procedure))
 
-(define (with-optimizer fn)
+;; TODO name should be extracted from fn but fn is an annotated procedure
+;; and thus obscures the original name of the object
+(define (with-optimizer fn name)
   (define call-graph-builder (make-call-graph-builder))
-  (define optimizer (make-optimizer fn))
+  (define optimizer (make-optimizer fn name))
   
   (define (before #:args args)
     (call-graph-builder-pre-call call-graph-builder #:args args))

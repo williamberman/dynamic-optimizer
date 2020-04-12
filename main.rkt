@@ -22,6 +22,7 @@
   fib-5)
 
 (define (test-2)
-  (install! 'fib (with-optimizer fib))
+  (install! 'fib (with-optimizer fib 'fib))
   (fib 5)
-  (query-optimizer (optimized-procedure-optimizer fib)))
+  (define the-optimizer (optimized-procedure-optimizer fib))
+  (optimizer-querier-repl the-optimizer))
