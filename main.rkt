@@ -5,6 +5,7 @@
 (require data/gvector)
 (require "optimizations.rkt")
 (require "optimizer.rkt")
+(require "optimizer-repl.rkt")
 
 ;; TODO I'd like to be able to wrap a procedure located in its own module
 (define fib
@@ -25,4 +26,4 @@
   (install! 'fib (with-optimizer fib 'fib))
   (fib 5)
   (define the-optimizer (optimized-procedure-optimizer fib))
-  (optimizer-querier-repl the-optimizer))
+  ((make-optimizer-repl the-optimizer)))

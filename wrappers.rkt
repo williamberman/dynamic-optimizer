@@ -57,7 +57,9 @@
   (define (after #:args args #:return-value return-value)
     (call-graph-builder-post-call call-graph-builder #:args args #:return-value return-value)
     (when (call-graph-builder-is-complete? call-graph-builder)
-      (define optimization (get-optimization (call-graph-builder-call-graph call-graph-builder) fn))
+      (define optimization (get-optimization
+                            (call-graph-builder-call-graph call-graph-builder)
+                            fn))
       (when optimization
         (optimizer-add-possible-optimization! optimizer args optimization))
       (set! call-graph-builder (make-call-graph-builder))))
