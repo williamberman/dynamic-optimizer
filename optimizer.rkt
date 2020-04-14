@@ -2,17 +2,19 @@
 
 (require "utils.rkt")
 
-(provide
- make-optimizer
- optimizer-add-possible-optimization!
- optimizer-enable-optimization!
- optimizer-disable-optimization!
- optimizer-possible-optimizations
- optimizer-get-available-optimizations
- optimizer-get-optimization
- optimizer-name)
+(provide make-optimizer
+         optimizer-add-possible-optimization!
+         optimizer-enable-optimization!
+         optimizer-disable-optimization!
+         optimizer-possible-optimizations
+         optimizer-get-available-optimizations
+         optimizer-get-optimization
+         optimizer-name
+         optimizer-optimization-is-enabled?
+         optimizer-optimization-is-disabled?)
 
 ;; TODO this name property is weird
+;; TODO The dual hash tables thing should be changed
 (struct optimizer (optimizations possible-optimizations fn name)
   #:property prop:procedure (struct-field-index fn))
 
@@ -46,3 +48,9 @@
 
 (define (optimizer-get-optimization optimizer args)
   (annotated-procedure-body (hash-ref (optimizer-possible-optimizations optimizer) args)))
+
+(define (optimizer-optimization-is-enabled? optimizer args)
+  (hash-has-key? (optimizer-optimizations optimizer) args))
+
+(define (optimizer-optimization-is-disabled? optimizer args)
+  (hash-has-key? (optimizer-possible-optimizations optimizer) args))

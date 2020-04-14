@@ -1,6 +1,7 @@
 #lang racket
 
 (require "optimizer.rkt")
+(require data/gvector)
 
 ;; TODO I'd like to not have to provide all symbols, and instead only have
 ;; to provide make-optimizer-repl
@@ -9,21 +10,31 @@
          call
          available-optimizations
          view-optimization
-         help)
+         help
+         changes)
 
-;; TODO, on exit this should log the delta
+;; TODO something in here is causing the second read
+;; to hang.
 (define (make-optimizer-repl optimizer)
+  (define this-repl-state (repl-state optimizer (make-hash)))
+
+  (define (the-print value)
+    (when (not (void? value))
+      (displayln value)))
+  
   (define (loop)
     (define input (optimizer-repl-read optimizer))
     (if (equal? input '(quit))
-        (displayln "Goodbye")
+        (begin
+          (the-print (changes))
+          (the-print "Goodbye"))
         (begin 
-          (displayln (eval input))
+          (the-print (eval input))
           (loop))))
-  
+
   (lambda ()
-    (parameterize ([the-optimizer optimizer])
-      (displayln (help))
+    (parameterize ([the-repl-state this-repl-state])
+      (the-print (help))
       (loop))))
 
 (define (optimizer-repl-read optimizer)
@@ -31,25 +42,73 @@
   (define input (read))
   input)
 
-;; TODO wrap these in some syntax that ensures optimizer is not false
+(struct repl-state (optimizer changes))
 
-(define the-optimizer (make-parameter #f))
+(define the-repl-state (make-parameter #f))
+
+(define-syntax-rule (with-repl-state . body)
+  (begin
+    (when (not (the-repl-state))
+      (raise "parameter: the-repl-state has not been set"))
+    .
+    body))
 
 (define (enable . args)
-  (optimizer-enable-optimization! (the-optimizer) args))
+  (with-repl-state
+    (optimizer-enable-optimization! (repl-state-optimizer (the-repl-state)) args)
+    (hash-set! (repl-state-changes (the-repl-state)) args 'enabled)))
 
 (define (disable . args)
-  (optimizer-disable-optimization! (the-optimizer) args))
+  (with-repl-state
+    (optimizer-disable-optimization! (repl-state-optimizer (the-repl-state)) args)
+    (hash-set! (repl-state-changes (the-repl-state)) args 'disabled)))
 
 (define (call . args)
-  (apply (the-optimizer) args))
+  (with-repl-state
+    (apply (repl-state-optimizer (the-repl-state)) args)))
 
 (define (available-optimizations)
-  (optimizer-get-available-optimizations (the-optimizer)))
+  (with-repl-state
+    (define the-available-optimizations
+      (optimizer-get-available-optimizations (repl-state-optimizer (the-repl-state))))
+    (if (= 0 (length the-available-optimizations))
+        (displayln "There are no available optimizations")
+        (begin
+          (displayln "Available optimizations")
+          (for ([args the-available-optimizations])
+            (displayln args))))))
 
 ;; TODO this needs to be formatted
 (define (view-optimization . args)
-  (optimizer-get-optimization (the-optimizer) args))
+  (with-repl-state
+    (optimizer-get-optimization (repl-state-optimizer (the-repl-state)) args)))
 
 (define (help)
   "TODO: Insert standard help message here")
+
+(define (changes)
+  (define enabled (make-gvector))
+  (define disabled (make-gvector))
+  
+  (with-repl-state
+    (hash-for-each
+     (repl-state-changes (the-repl-state))
+     (lambda (args state)
+       (case state
+         ['enabled (gvector-add! enabled args)]
+         ['disabled (gvector-add! disabled args)]
+         [else (raise (string-append "Illegal change state: " state))]))))
+
+  (when (> (gvector-count enabled) 0)
+    (displayln "enabled")
+    (for ([args enabled])
+      (displayln args)))
+
+  (when (> (gvector-count disabled) 0)
+   (displayln "disabled")
+   (for ([args disabled])
+     (displayln args)))
+
+  (when (and (= (gvector-count enabled) 0)
+             (= (gvector-count disabled) 0))
+    (displayln "No changes")))
