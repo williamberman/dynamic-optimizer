@@ -14,33 +14,37 @@
          changes)
 
 ;; TODO something in here is causing the second read
-;; to hang.
+;; to hang when running the repl in emacs.
+;; TODO the available optimizations don't seem to be giving
+;; the correct optimizations
 (define (make-optimizer-repl optimizer)
   (define this-repl-state (repl-state optimizer (make-hash)))
+
+  (define (the-read)
+    (display (string-append "optimizer:" (optimizer-name optimizer) "> "))
+    (read))
+
+  (define (the-eval input)
+    (eval input))
 
   (define (the-print value)
     (when (not (void? value))
       (displayln value)))
   
-  (define (loop)
-    (define input (optimizer-repl-read optimizer))
+  (define (the-loop)
+    (define input (the-read))
     (if (equal? input '(quit))
         (begin
           (the-print (changes))
           (the-print "Goodbye"))
         (begin 
-          (the-print (eval input))
-          (loop))))
+          (the-print (the-eval input))
+          (the-loop))))
 
   (lambda ()
     (parameterize ([the-repl-state this-repl-state])
       (the-print (help))
-      (loop))))
-
-(define (optimizer-repl-read optimizer)
-  (display (string-append "optimizer:" (optimizer-name optimizer) "> "))
-  (define input (read))
-  input)
+      (the-loop))))
 
 (struct repl-state (optimizer changes))
 
@@ -78,10 +82,9 @@
           (for ([args the-available-optimizations])
             (displayln args))))))
 
-;; TODO this needs to be formatted
 (define (view-optimization . args)
   (with-repl-state
-    (optimizer-get-optimization (repl-state-optimizer (the-repl-state)) args)))
+    (pretty-print (optimizer-get-optimization (repl-state-optimizer (the-repl-state)) args))))
 
 (define (help)
   "TODO: Insert standard help message here")

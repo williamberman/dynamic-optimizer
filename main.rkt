@@ -7,6 +7,8 @@
 (require "optimizer.rkt")
 (require "optimizer-repl.rkt")
 
+(provide test-1 test-2)
+
 ;; TODO I'd like to be able to wrap a procedure located in its own module
 (define fib
   (annotated-lambda (n)
@@ -14,7 +16,7 @@
                           ((= n 1) 1)
                           (#t (+ (fib (- n 1)) (fib (- n 2)))))))
 
-(define (test)
+(define (test-1)
   (install! 'fib (with-call-graph-save-and-display fib "/tmp/call-graph.dot"))
   (fib 5)
   (define call-graph (gvector-ref call-graphs (- (gvector-count call-graphs) 1)))

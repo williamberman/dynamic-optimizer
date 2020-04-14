@@ -21,8 +21,7 @@
  call-graph->all-arguments-top-down
  call-graph->all-arguments-bottom-up)
 
-(define waiting-for-return-value 'waiting-for-return-value)
-
+;; TODO these should incorporate the return-value into the result
 (struct a-call
   (arguments return-value)
   #:transparent
@@ -40,6 +39,8 @@
 
 (define (make-call-graph-builder)
   (call-graph-builder (make-stack root-node) (unweighted-graph/directed (list))))
+
+(define waiting-for-return-value 'waiting-for-return-value)
 
 (define (call-graph-builder-pre-call call-graph-builder #:args args)
   (define the-call (a-call args waiting-for-return-value))
@@ -146,7 +147,7 @@
        [result (call-graph node) any/c])
   (cons (list 'calculate (a-call-arguments node))
         (map
-         (lambda (child) (call-graph->all-arguments-top-down call-graph child))
+         (lambda (child) (make-base-case child))
          (sort (get-neighbors call-graph node) >
                #:key (lambda (child)
                        (length (get-neighbors (transpose call-graph) child)))))))
@@ -158,14 +159,19 @@
     [(eq? node root-node)
      (call-graph->all-arguments-top-down call-graph (car (get-neighbors call-graph node)))]
     [(= 0 (length children))
-     (list 'base-case (a-call-arguments node) (a-call-return-value node))]
+     (list (make-base-case node))]
     [else
      (begin
        (with-handlers ([exn:fail:no-subproblem-found?
                         (lambda (_)
                           (call-graph->all-arguments-top-down-last-step call-graph node))])
          (cons (list 'calculate (a-call-arguments node))
-               (call-graph->all-arguments-top-down call-graph (get-single-subproblem call-graph node)))))]))
+               (call-graph->all-arguments-top-down
+                call-graph
+                (get-single-subproblem call-graph node)))))]))
+
+(define (make-base-case node)
+  (list 'base-case (a-call-arguments node) (a-call-return-value node)))
 
 (define (call-graph->all-arguments-bottom-up . args)
   (reverse (apply call-graph->all-arguments-top-down args)))
