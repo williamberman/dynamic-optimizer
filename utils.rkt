@@ -3,16 +3,16 @@
 (require typed-stack)
 (require graph)
 
-(provide
- around
- install!
- uninstall!
- root-node
- graph->tree
- butlast
- annotated-lambda
- annotated-procedure-body
- get-subproblem-combination-function)
+(provide around
+         install!
+         uninstall!
+         root-node
+         graph->tree
+         butlast
+         annotated-lambda
+         annotated-procedure-body
+         get-subproblem-combination-function
+         tree-map)
 
 (define (around #:fn fn #:before before #:after after)
   (define (wrapped . args)
@@ -42,8 +42,8 @@
 
 (define (graph->tree% graph [node root-node])
   (cons node (map
-                  (lambda (child) (graph->tree% graph child))
-                  (get-neighbors graph node))))
+              (lambda (child) (graph->tree% graph child))
+              (get-neighbors graph node))))
 
 (define/contract (graph->tree graph . args)
   (dag? . -> . any/c)
@@ -60,6 +60,20 @@
 (define-syntax-rule (annotated-lambda formals . body)
   (annotated-procedure (lambda formals . body)
                        '(lambda formals . body)))
+
+(define (tree-map pred lst)
+  (let loop ((lst lst)
+             (acc identity))
+    (cond
+      ((null? lst)
+       (acc '()))
+      ((not (pair? (car lst)))
+       (loop (cdr lst) (lambda (r)
+                         (acc (cons (pred (car lst)) r)))))
+      (else
+       (loop (cdr lst)
+             (lambda (r)
+               (acc (cons (loop (car lst) identity) r))))))))
 
 ;; This is going to be a really fun experiment in code walking
 (define (get-subproblem-combination-function annotated-procedure)

@@ -3,63 +3,50 @@
 (require typed-stack)
 (require graph)
 (require "utils.rkt")
+(require data/gvector)
 
-(provide
- a-call
- call-graph-builder-call-graph
- a-call-arguments
- a-call-return-value
- make-call-graph-builder
- call-graph-builder-pre-call
- call-graph-builder-post-call
- call-graph-builder-is-complete?
- looks-like-function?
- get-constant-space-used
- uses-constant-space?
- get-single-subproblem
- all-children-are-leaves?
- call-graph->all-arguments-top-down
- call-graph->all-arguments-bottom-up)
+(provide a-call
+         a-call?
+         call-graph-builder-call-graph
+         a-call-arguments
+         a-call-return-value
+         make-call-graph-builder
+         call-graph-builder-pre-call
+         call-graph-builder-post-call
+         call-graph-builder-is-complete?
+         looks-like-function?
+         get-constant-space-used
+         uses-constant-space?
+         get-single-subproblem
+         all-children-are-leaves?
+         call-graph->all-arguments-top-down
+         call-graph->all-arguments-bottom-up)
 
-;; TODO these should incorporate the return-value into the result
 (struct a-call
-  (arguments return-value)
-  #:transparent
-  #:mutable
-  #:methods
-  gen:equal+hash
-  [(define (equal-proc a b equal?-recur)
-     (equal?-recur (a-call-arguments a) (a-call-arguments b)))
-   (define (hash-proc a hash-recur)
-     (hash-recur (a-call-arguments a)))
-   (define (hash2-proc a hash2-recur)
-     (hash2-recur (a-call-arguments a)))])
+  (arguments return-value children-hash)
+  #:transparent)
 
-(struct call-graph-builder (nodes-visited call-graph))
+(struct call-graph-builder
+  (call-stack call-graph is-complete?)
+  #:mutable)
 
 (define (make-call-graph-builder)
-  (call-graph-builder (make-stack root-node) (unweighted-graph/directed (list))))
-
-(define waiting-for-return-value 'waiting-for-return-value)
+  (call-graph-builder (make-stack) (unweighted-graph/directed (list)) #f))
 
 (define (call-graph-builder-pre-call call-graph-builder #:args args)
-  (define the-call (a-call args waiting-for-return-value))
-  (add-directed-edge!
-   (call-graph-builder-call-graph call-graph-builder)
-   (top (call-graph-builder-nodes-visited call-graph-builder))
-   the-call)
-  (push! (call-graph-builder-nodes-visited call-graph-builder) the-call))
+  (push! (call-graph-builder-call-stack call-graph-builder) (make-gvector)))
 
 (define (call-graph-builder-post-call call-graph-builder #:args args #:return-value return-value)
-  ;; TODO need to be able to add to the graph only once return values
-  ;; are known
-  (set-a-call-return-value!
-   (top (call-graph-builder-nodes-visited call-graph-builder))
-   return-value)
-  (pop! (call-graph-builder-nodes-visited call-graph-builder)))
-
-(define (call-graph-builder-is-complete? call-graph-builder)
-  (eq? root-node (top (call-graph-builder-nodes-visited call-graph-builder))))
+  (define children (top (call-graph-builder-call-stack call-graph-builder)))
+  (pop! (call-graph-builder-call-stack call-graph-builder))
+  (define the-call (a-call args return-value (equal-hash-code children)))
+  (for ([child children])
+    (add-directed-edge! (call-graph-builder-call-graph call-graph-builder) the-call child))
+  (if (stack-empty? (call-graph-builder-call-stack call-graph-builder))
+      (begin
+        (add-directed-edge! (call-graph-builder-call-graph call-graph-builder) root-node the-call)
+        (set-call-graph-builder-is-complete?! call-graph-builder #t))
+      (gvector-add! (top (call-graph-builder-call-stack call-graph-builder)) the-call)))
 
 (define (looks-like-function?% call-graph (node root-node) (previously-seen-calls (make-hash)))
   (define (recur)
