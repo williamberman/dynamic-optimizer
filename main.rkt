@@ -6,26 +6,25 @@
 (require "optimizations.rkt")
 (require "optimizer.rkt")
 (require "optimizer-repl.rkt")
+(require "additional-properties.rkt")
 
 (provide test-1 test-2)
 
-;; TODO I'd like to be able to wrap a procedure located in its own module
-(define fib
-  (annotated-lambda (n)
-                    (cond ((= n 0) 0)
-                          ((= n 1) 1)
-                          (#t (+ (fib (- n 1)) (fib (- n 2)))))))
+;; TODO define new install functions
 
 (define (test-1)
-  (install! 'fib (with-call-graph-save-and-display fib "/tmp/call-graph.dot"))
+  (install-call-graph! fib "/tmp/call-graph.dot")
   (fib 5)
   (define call-graph (gvector-ref call-graphs (- (gvector-count call-graphs) 1)))
   (define fib-5 (get-optimization call-graph fib))
-  (uninstall! 'fib)
+  (reset-advice! fib)
   fib-5)
 
 (define (test-2)
-  (install! 'fib (with-optimizer fib 'fib))
+  (install-optimizer! fib)
   (fib 5)
-  (define the-optimizer (optimized-procedure-optimizer fib))
+  (fib 9)
+  (fib 8)
+  (fib 8)
+  (define the-optimizer (property-ref fib 'optimizer))
   ((make-optimizer-repl the-optimizer)))

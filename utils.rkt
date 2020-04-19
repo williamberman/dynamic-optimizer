@@ -1,41 +1,16 @@
 #lang racket
 
-(require typed-stack)
-(require graph)
+(require graph
+         racket/stxparam)
 
-(provide around
-         install!
-         uninstall!
-         root-node
+(provide root-node
          graph->tree
          butlast
-         annotated-lambda
-         annotated-procedure-body
          get-subproblem-combination-function
-         tree-map)
-
-(define (around #:fn fn #:before before #:after after)
-  (define (wrapped . args)
-    (define return-value (match (keyword-apply before '(#:args) (list args) (list))
-                           [(list 'return-value rv) rv]
-                           [_ (apply fn args)]))
-    (apply after (list) #:args args #:return-value return-value)
-    return-value)
-  wrapped)
-
-(define old-values (make-weak-hash))
-
-(define (install! identifier new-value)
-  (define these-old-values (hash-ref old-values identifier make-stack))
-  (push! these-old-values (eval identifier))
-  (hash-set! old-values identifier these-old-values)
-  (eval `(set! ,identifier ,new-value)))
-
-(define (uninstall! identifier)
-  (define these-old-values (hash-ref old-values identifier))
-  (define old-value (top these-old-values))
-  (pop! these-old-values)
-  (eval `(set! ,identifier ,old-value)))
+         tree-map
+         aif
+         awhen
+         it)
 
 ;; Root node is a sentinel to provide graph entrypoints
 (define root-node 'root-node)
@@ -54,13 +29,6 @@
       (list)
       (cons (car lst) (butlast (cdr lst) n))))
 
-(struct annotated-procedure (procedure body)
-  #:property prop:procedure (struct-field-index procedure))
-
-(define-syntax-rule (annotated-lambda formals . body)
-  (annotated-procedure (lambda formals . body)
-                       '(lambda formals . body)))
-
 (define (tree-map pred lst)
   (let loop ((lst lst)
              (acc identity))
@@ -76,6 +44,25 @@
                (acc (cons (loop (car lst) identity) r))))))))
 
 ;; This is going to be a really fun experiment in code walking
-(define (get-subproblem-combination-function annotated-procedure)
+(define (get-subproblem-combination-function function-body)
   ;; TODO
   '+)
+
+(define-syntax-parameter it (lambda (stx)
+                              (raise-syntax-error
+                               (syntax-e stx)
+                               "can only be used inside syntax which provides binding.")))
+
+(define-syntax-rule (aif predicate consequent alternative)
+  (let ([tmp predicate])
+    (if tmp
+        (syntax-parameterize ([it (make-rename-transformer #'tmp)])
+          consequent)
+        alternative)))
+
+(define-syntax-rule (awhen predicate consequent)
+  (let ([tmp predicate])
+    (when tmp
+        (syntax-parameterize ([it (make-rename-transformer #'tmp)])
+          consequent))))
+

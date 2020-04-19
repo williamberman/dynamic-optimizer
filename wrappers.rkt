@@ -14,6 +14,8 @@
  with-optimizer
  optimized-procedure-optimizer)
 
+;; TODO these need to be ported to the new advice system
+
 (define (with-call-graph fn visit-completed-call-graph)
   (define call-graph-builder (make-call-graph-builder))
   

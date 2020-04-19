@@ -22,8 +22,6 @@
   (lambda (fn [name (object-name fn)])
    (define optimizations (make-hash))
    (define possible-optimizations (make-hash))
-   ;; TODO does this handle keyword arguments?
-   ;; make-keyword-procedure, keyword-apply
    (define (wrapper . args)
      ;; TODO check optimizations
      (apply fn args))
