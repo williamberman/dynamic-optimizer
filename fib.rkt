@@ -43,3 +43,7 @@
 (property-set! fib 'body fib-body)
 (property-set! fib-3-back 'body fib-3-back-body)
 (property-set! fib-not-constant-space 'body fib-not-constant-space-body)
+
+(property-set! fib 'function-identifier 'fib)
+(property-set! fib-3-back 'function-identifier 'fib-3-back)
+(property-set! fib-not-constant-space 'function-identifier 'fib-not-constant-space)

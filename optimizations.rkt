@@ -14,7 +14,8 @@
        (define body (make-bottom-up-constant-space-procedure
                      (call-graph->all-arguments-bottom-up call-graph)
                      (get-subproblem-combination-function
-                      (property-ref function 'body))))
+                      (property-ref function 'body)
+                      (property-ref function 'function-identifier))))
 
        (make-optimized-function-helper body))]
     [#t #f]))
