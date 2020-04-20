@@ -65,12 +65,10 @@
        (if (and (not call-graph-builder )
                 (optimizer-has-optimization? optimizer the-argument-list)
                 (optimizer-optimization-is-enabled? optimizer the-argument-list))
-           (begin
-             (keyword-apply (optimizer-get-optimization optimizer the-argument-list)
-                            kws
-                            kw-args
-                            args))
-           
+           (keyword-apply (optimizer-get-optimization optimizer the-argument-list)
+                          kws
+                          kw-args
+                          args)
            (begin
              (when (not call-graph-builder)
                (set! call-graph-builder (make-call-graph-builder)))
