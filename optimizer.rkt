@@ -13,7 +13,8 @@
          optimizer-get-optimization
          optimizer-optimization-is-enabled?
          optimizer-optimization-is-disabled?
-         install-optimizer!)
+         install-optimizer!
+         uninstall-optimizer!)
 
 (struct available-optimization (optimization [state #:mutable]))
 
@@ -80,3 +81,7 @@
 
   (property-set! receptive-function 'optimizer optimizer)
   (add-function 'around receptive-function around))
+
+(define (uninstall-optimizer! receptive-function)
+  (property-remove! receptive-function 'optimizer)
+  (remove-function 'around receptive-function))

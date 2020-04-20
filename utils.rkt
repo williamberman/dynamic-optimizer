@@ -6,7 +6,6 @@
 (provide root-node
          graph->tree
          butlast
-         get-subproblem-combination-function
          tree-map
          aif
          awhen
@@ -42,11 +41,6 @@
        (loop (cdr lst)
              (lambda (r)
                (acc (cons (loop (car lst) identity) r))))))))
-
-;; This is going to be a really fun experiment in code walking
-(define (get-subproblem-combination-function function-body)
-  ;; TODO
-  '+)
 
 (define-syntax-parameter it (lambda (stx)
                               (raise-syntax-error

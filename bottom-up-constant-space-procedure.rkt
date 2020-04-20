@@ -4,7 +4,8 @@
 (require "call-graph.rkt")
 
 (provide make-bottom-up-constant-space-procedure
-         can-make-bottom-up-constant-space-procedure?)
+         can-make-bottom-up-constant-space-procedure?
+         get-subproblem-combination-function)
 
 (define (can-make-bottom-up-constant-space-procedure? call-graph)
   (and (looks-like-function? call-graph) (uses-constant-space? call-graph)))
@@ -17,6 +18,11 @@
         (define cur ,(make-current-update update-function (length initial-values)))
         ,@(make-definition-updates (length initial-values)))
       ,(number->definition-symbol 1))))
+
+;; This is going to be a really fun experiment in code walking
+(define (get-subproblem-combination-function function-body)
+  ;; TODO
+  '+)
 
 (define (split-arguments-into-initial-values-and-need-to-calculate all-arguments)
   (define initial-values (make-gvector))

@@ -1,19 +1,10 @@
 #lang racket
 
-(require "utils.rkt"
-         "fib.rkt"
+(require "fib.rkt"
          "call-graph.rkt"
-         "optimizer.rkt")
-
-(install-call-graph! fib (lambda (call-graph) (pretty-print (graph->tree call-graph))))
-
-;; (require data/gvector)
-;; (require "optimizations.rkt")
-;; (require "optimizer.rkt")
-;; (require "optimizer-repl.rkt")
-;; (require "additional-properties.rkt")
-
-;; TODO define new install functions
+         "optimizer.rkt"
+         "additional-properties.rkt"
+         "optimizer-repl.rkt")
 
 (define (test-1)
   (install-call-graph! fib (lambda (call-graph) (save-and-display-call-graph
@@ -27,4 +18,15 @@
   (fib 5)
   (fib 9)
   (fib 8)
-  (fib 8))
+  (fib 8)
+  (uninstall-optimizer! fib))
+
+;; TODO use optimizer repl
+(define (test-3)
+  (install-optimizer! fib)
+  (fib 5)
+  (fib 9)
+  (fib 8)
+  (fib 8)
+  ((make-optimizer-repl fib (property-ref fib 'optimizer) "fib"))
+  (uninstall-optimizer! fib))

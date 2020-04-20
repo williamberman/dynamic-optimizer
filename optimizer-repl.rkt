@@ -17,11 +17,11 @@
 ;; to hang when running the repl in emacs.
 ;; TODO the available optimizations don't seem to be giving
 ;; the correct optimizations
-(define (make-optimizer-repl optimizer)
-  (define this-repl-state (repl-state optimizer (make-hash)))
+(define (make-optimizer-repl function optimizer name)
+  (define this-repl-state (repl-state function optimizer (make-hash)))
 
   (define (the-read)
-    (display (string-append "optimizer:" (optimizer-name optimizer) "> "))
+    (display (string-append "optimizer:" name "> "))
     (read))
 
   (define (the-eval input)
@@ -46,7 +46,7 @@
       (the-print (help))
       (the-loop))))
 
-(struct repl-state (optimizer changes))
+(struct repl-state (function optimizer changes))
 
 (define the-repl-state (make-parameter #f))
 
@@ -69,12 +69,12 @@
 
 (define (call . args)
   (with-repl-state
-    (apply (repl-state-optimizer (the-repl-state)) args)))
+    (apply (repl-state-function (the-repl-state)) args)))
 
 (define (available-optimizations)
   (with-repl-state
     (define the-available-optimizations
-      (optimizer-get-available-optimizations (repl-state-optimizer (the-repl-state))))
+      (optimizer-get-disabled-optimizations (repl-state-optimizer (the-repl-state))))
     (if (= 0 (length the-available-optimizations))
         (displayln "There are no available optimizations")
         (begin
