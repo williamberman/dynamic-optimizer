@@ -21,7 +21,6 @@
   (fib 8)
   (uninstall-optimizer! fib))
 
-;; TODO use optimizer repl
 (define (test-3)
   (install-optimizer! fib)
   (fib 5)

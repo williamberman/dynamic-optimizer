@@ -1,22 +1,14 @@
 #lang racket
 
-(require "optimizer.rkt")
-(require data/gvector)
+(require "optimizer.rkt"
+         "additional-properties.rkt"
+         data/gvector
+         racket/exn)
 
-;; TODO I'd like to not have to provide all symbols, and instead only have
-;; to provide make-optimizer-repl
-(provide make-optimizer-repl
-         enable disable
-         call
-         available-optimizations
-         view-optimization
-         help
-         changes)
+(provide make-optimizer-repl)
 
 ;; TODO something in here is causing the second read
 ;; to hang when running the repl in emacs.
-;; TODO the available optimizations don't seem to be giving
-;; the correct optimizations
 (define (make-optimizer-repl function optimizer name)
   (define this-repl-state (repl-state function optimizer (make-hash)))
 
@@ -25,20 +17,31 @@
     (read))
 
   (define (the-eval input)
-    (eval input))
+    (match input
+      [(list 'help) (help)]
+      [(list 'call args ...) (apply call args)]
+      [(list 'enable args) (enable args)]
+      [(list 'disable args) (disable args)]
+      [(list 'available-optimizations) (available-optimizations)]
+      [(list 'view-optimization args) (view-optimization args)]
+      [(list 'changes) (changes)]
+      [_ (displayln "Not valid input")]))
 
   (define (the-print value)
     (when (not (void? value))
-      (displayln value)))
+      (pretty-print value)))
   
   (define (the-loop)
     (define input (the-read))
     (if (equal? input '(quit))
         (begin
           (the-print (changes))
-          (the-print "Goodbye"))
-        (begin 
-          (the-print (the-eval input))
+          (displayln "Goodbye"))
+        (begin
+          (with-handlers ([(lambda (_) #t) (lambda (exn)
+                                             (displayln "Internal error.")
+                                             (displayln (exn->string exn)))])
+           (the-print (the-eval input)))
           (the-loop))))
 
   (lambda ()
@@ -57,12 +60,12 @@
     .
     body))
 
-(define (enable . args)
+(define (enable args)
   (with-repl-state
     (optimizer-enable-optimization! (repl-state-optimizer (the-repl-state)) args)
     (hash-set! (repl-state-changes (the-repl-state)) args 'enabled)))
 
-(define (disable . args)
+(define (disable args)
   (with-repl-state
     (optimizer-disable-optimization! (repl-state-optimizer (the-repl-state)) args)
     (hash-set! (repl-state-changes (the-repl-state)) args 'disabled)))
@@ -82,12 +85,14 @@
           (for ([args the-available-optimizations])
             (displayln args))))))
 
-(define (view-optimization . args)
+(define (view-optimization args)
   (with-repl-state
-    (pretty-print (optimizer-get-optimization (repl-state-optimizer (the-repl-state)) args))))
+    (pretty-print (property-ref
+                   (optimizer-get-optimization (repl-state-optimizer (the-repl-state)) args)
+                   'body))))
 
 (define (help)
-  "TODO: Insert standard help message here")
+  (displayln "TODO: Insert standard help message here"))
 
 (define (changes)
   (define enabled (make-gvector))

@@ -28,10 +28,10 @@
   (hash-set! optimizer args (available-optimization optimization disabled)))
 
 (define (optimizer-enable-optimization! optimizer args)
-  (set-available-optimization-state! (hash-ref! optimizer args) enabled))
+  (set-available-optimization-state! (hash-ref optimizer args) enabled))
 
 (define (optimizer-disable-optimization! optimizer args)
-  (set-available-optimization-state! (hash-ref! optimizer args) disabled))
+  (set-available-optimization-state! (hash-ref optimizer args) disabled))
 
 (define (optimizer-get-disabled-optimizations optimizer)
   (filter (lambda (args) (eq? disabled
