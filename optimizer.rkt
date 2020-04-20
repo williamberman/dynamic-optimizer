@@ -42,6 +42,9 @@
 (define (optimizer-get-optimization optimizer args)
   (available-optimization-optimization (hash-ref optimizer args)))
 
+(define (optimizer-has-optimization? optimizer args)
+  (hash-has-key? optimizer args))
+
 (define (optimizer-optimization-is-enabled? optimizer args)
   (eq? enabled
        (available-optimization-state (hash-ref optimizer args))))
@@ -51,35 +54,47 @@
        (available-optimization-state (hash-ref optimizer args))))
 
 (define (install-optimizer! receptive-function)
-  (define call-graph-builder (make-call-graph-builder))
+  (define call-graph-builder #f)
   (define optimizer (make-optimizer))
 
-  ;; TODO somewhere in here we need to delegate to the optimization
   (define around
     (make-keyword-procedure
      (lambda (kws kw-args the-function . args)
        (define the-argument-list (make-argument-list kws kw-args args))
        
-       (call-graph-builder-pre-call call-graph-builder
-                                    #:args the-argument-list)
+       (if (and (not call-graph-builder )
+                (optimizer-has-optimization? optimizer the-argument-list)
+                (optimizer-optimization-is-enabled? optimizer the-argument-list))
+           (begin
+             (keyword-apply (optimizer-get-optimization optimizer the-argument-list)
+                            kws
+                            kw-args
+                            args))
+           
+           (begin
+             (when (not call-graph-builder)
+               (set! call-graph-builder (make-call-graph-builder)))
+             
+             (call-graph-builder-pre-call call-graph-builder
+                                          #:args the-argument-list)
 
-       (define the-return-value (keyword-apply the-function kws kw-args args))
+             (let ([the-return-value (keyword-apply the-function kws kw-args args)])
+               
+               (call-graph-builder-post-call call-graph-builder
+                                             #:args the-argument-list
+                                             #:return-value the-return-value)
 
-       (call-graph-builder-post-call call-graph-builder
-                                     #:args the-argument-list
-                                     #:return-value the-return-value)
+               (when (call-graph-builder-is-complete? call-graph-builder)
+                 (define optimization (get-optimization
+                                       (call-graph-builder-call-graph call-graph-builder)
+                                       receptive-function))
+                 (when optimization
+                   (optimizer-add-possible-optimization! optimizer
+                                                         the-argument-list
+                                                         optimization))
+                 (set! call-graph-builder #f))
 
-       (when (call-graph-builder-is-complete? call-graph-builder)
-         (define optimization (get-optimization
-                               (call-graph-builder-call-graph call-graph-builder)
-                               receptive-function))
-         (when optimization
-           (optimizer-add-possible-optimization! optimizer
-                                                 the-argument-list
-                                                 optimization))
-         (set! call-graph-builder (make-call-graph-builder)))
-
-       the-return-value)))
+               the-return-value))))))
 
   (property-set! receptive-function 'optimizer optimizer)
   (add-function 'around receptive-function around))
