@@ -9,7 +9,8 @@
          tree-map
          aif
          awhen
-         it)
+         it
+         make-argument-list)
 
 ;; Root node is a sentinel to provide graph entrypoints
 (define root-node 'root-node)
@@ -60,3 +61,9 @@
         (syntax-parameterize ([it (make-rename-transformer #'tmp)])
           consequent))))
 
+(define (make-argument-list keywords keyword-arguments arguments)
+  (define argument-list (reverse arguments))
+  (for ([keyword keywords]
+        [keyword-argument keyword-arguments])
+    (set! argument-list (cons keyword-argument (cons keyword argument-list))))
+  (reverse argument-list))

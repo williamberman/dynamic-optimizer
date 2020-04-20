@@ -20,10 +20,10 @@
     (match input
       [(list 'help) (help)]
       [(list 'call args ...) (apply call args)]
-      [(list 'enable args) (enable args)]
-      [(list 'disable args) (disable args)]
-      [(list 'available-optimizations) (available-optimizations)]
-      [(list 'view-optimization args) (view-optimization args)]
+      [(list 'enable args ...) (enable args)]
+      [(list 'disable args ...) (disable args)]
+      [(list 'available) (available-optimizations)]
+      [(list 'view args ...) (view-optimization args)]
       [(list 'changes) (changes)]
       [_ (displayln "Not valid input")]))
 
@@ -36,6 +36,7 @@
     (if (equal? input '(quit))
         (begin
           (the-print (changes))
+          (displayln "")
           (displayln "Goodbye"))
         (begin
           (with-handlers ([(lambda (_) #t) (lambda (exn)
@@ -92,7 +93,24 @@
                    'body))))
 
 (define (help)
-  (displayln "TODO: Insert standard help message here"))
+  (displayln "(call argument ...): Call the function being optimized with the given arguments.
+
+(available): Display the optimizations which have been discovered but not enabled.
+
+(view argument ...): View the body of the optimization that was discovered for the given arguments. 
+Arguments should be in the same order as displayed by (available).
+
+(enable argument ...): Enable the optimization that was discovered for the given arguments. 
+The optimization may be disabled later. Arguments should be in the same order as displayed by (available).
+
+(disable argument ...): Disable the optimization that was discovered for the given arguments. 
+The optimization may again enabled later. Arguments should be in the same order as displayed by (available).
+
+(changes): Display the modifications made in this repl session to the function being optimized.
+
+(help): Display this message.
+
+(quit): Exit the repl."))
 
 (define (changes)
   (define enabled (make-gvector))
@@ -107,16 +125,21 @@
          ['disabled (gvector-add! disabled args)]
          [else (raise (string-append "Illegal change state: " state))]))))
 
-  (when (> (gvector-count enabled) 0)
-    (displayln "enabled")
-    (for ([args enabled])
-      (displayln args)))
+  (if (and (= (gvector-count enabled) 0)
+           (= (gvector-count disabled) 0))
+      (displayln "No changes")
 
-  (when (> (gvector-count disabled) 0)
-   (displayln "disabled")
-   (for ([args disabled])
-     (displayln args)))
+      (begin
+        
 
-  (when (and (= (gvector-count enabled) 0)
-             (= (gvector-count disabled) 0))
-    (displayln "No changes")))
+        (displayln "Changes made:")
+
+        (when (> (gvector-count enabled) 0)
+          (displayln "enabled")
+          (for ([args enabled])
+            (displayln args)))
+
+        (when (> (gvector-count disabled) 0)
+          (displayln "disabled")
+          (for ([args disabled])
+            (displayln args))))))

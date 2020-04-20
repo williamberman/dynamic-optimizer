@@ -3,7 +3,8 @@
 (require "call-graph.rkt"
          "optimizations.rkt"
          "additional-properties.rkt"
-         "advice.rkt")
+         "advice.rkt"
+         "utils.rkt")
 
 (provide make-optimizer
          optimizer-add-possible-optimization!
@@ -57,13 +58,15 @@
   (define around
     (make-keyword-procedure
      (lambda (kws kw-args the-function . args)
+       (define the-argument-list (make-argument-list kws kw-args args))
+       
        (call-graph-builder-pre-call call-graph-builder
-                                    #:args (list kws kw-args args))
+                                    #:args the-argument-list)
 
        (define the-return-value (keyword-apply the-function kws kw-args args))
 
        (call-graph-builder-post-call call-graph-builder
-                                     #:args (list kws kw-args args)
+                                     #:args the-argument-list
                                      #:return-value the-return-value)
 
        (when (call-graph-builder-is-complete? call-graph-builder)
@@ -72,12 +75,11 @@
                                receptive-function))
          (when optimization
            (optimizer-add-possible-optimization! optimizer
-                                                 (list kws kw-args args)
+                                                 the-argument-list
                                                  optimization))
          (set! call-graph-builder (make-call-graph-builder)))
 
-       the-return-value
-       )))
+       the-return-value)))
 
   (property-set! receptive-function 'optimizer optimizer)
   (add-function 'around receptive-function around))

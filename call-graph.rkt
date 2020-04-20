@@ -174,13 +174,15 @@
   (define around
     (make-keyword-procedure
      (lambda (kws kw-args the-function . args)
+       (define the-argument-list (make-argument-list kws kw-args args))
+       
        (call-graph-builder-pre-call call-graph-builder
-                                    #:args (list kws kw-args args))
+                                    #:args the-argument-list)
 
        (define the-return-value (keyword-apply the-function kws kw-args args))
 
        (call-graph-builder-post-call call-graph-builder
-                                     #:args (list kws kw-args args)
+                                     #:args the-argument-list
                                      #:return-value the-return-value)
 
        (when (call-graph-builder-is-complete? call-graph-builder)
