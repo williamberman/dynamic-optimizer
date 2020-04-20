@@ -17,8 +17,8 @@
 (define (make-receptive-function the-actual-function)
   (define the-receiver
     (make-keyword-procedure
-     (lambda (kws kw-args . rest )
-       
+     (lambda (kws kw-args . rest)
+
        (awhen (property-ref the-receiver 'before)
               (keyword-apply it
                              kws

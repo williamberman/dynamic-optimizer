@@ -1,16 +1,17 @@
 #lang racket
 
-(require racket/contract)
 (require "additional-properties.rkt")
 (require "capture-literals.rkt")
 (require "advice.rkt")
 
 (provide fib fib-3-back fib-not-constant-space)
 
+;; TODO it would be good to extract this definition pattern into a
+;; macro
+
 (with-literal
   fib-body
-  (define/contract (fib n)
-    ((lambda (in) (in . >= . 0)) . -> . (lambda (out) (out . >= . 0)))
+  (define (fib n)
     (a-literal fib-body (cond ((= n 0) 0)
                               ((= n 1) 1)
                               (#t (+ (fib (- n 1))
@@ -18,8 +19,7 @@
 
 (with-literal
   fib-3-back-body
-  (define/contract (fib-3-back n)
-    ((lambda (in) (in . >= . 0)) . -> . (lambda (out) (out . >= . 0)))
+  (define (fib-3-back n)
     (a-literal fib-3-back-body (cond ((= n 0) 0)
                                      ((= n 1) 1)
                                      ((= n 2) 2)
@@ -29,8 +29,7 @@
 
 (with-literal
   fib-not-constant-space-body
-  (define/contract (fib-not-constant-space n)
-    ((lambda (in) (in . >= . 0)) . -> . (lambda (out) (out . >= . 0)))
+  (define (fib-not-constant-space n)
     (a-literal fib-not-constant-space-body (cond ((= n 0) 0)
                                                  ((= n 1) 1)
                                                  ((even? n) (fib-not-constant-space (- n 1)))

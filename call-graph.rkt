@@ -1,9 +1,10 @@
 #lang racket
 
-(require typed-stack)
-(require graph)
-(require "utils.rkt")
-(require data/gvector)
+(require typed-stack
+         graph
+         "utils.rkt"
+         data/gvector
+         "advice.rkt")
 
 (provide a-call
          a-call?
@@ -20,7 +21,11 @@
          get-single-subproblem
          all-children-are-leaves?
          call-graph->all-arguments-top-down
-         call-graph->all-arguments-bottom-up)
+         call-graph->all-arguments-bottom-up
+         save-and-display-call-graph
+         call-graphs
+         install-call-graph!
+         uninstall-call-graph!)
 
 (struct a-call
   (arguments return-value children-hash)
@@ -162,3 +167,39 @@
 
 (define (call-graph->all-arguments-bottom-up . args)
   (reverse (apply call-graph->all-arguments-top-down args)))
+
+(define (install-call-graph! receptive-function visit-completed-call-graph)
+  (define call-graph-builder (make-call-graph-builder))
+
+  (define around
+    (make-keyword-procedure
+     (lambda (kws kw-args the-function . args)
+       (call-graph-builder-pre-call call-graph-builder
+                                    #:args (list kws kw-args args))
+
+       (define the-return-value (keyword-apply the-function kws kw-args args))
+
+       (call-graph-builder-post-call call-graph-builder
+                                     #:args (list kws kw-args args)
+                                     #:return-value the-return-value)
+
+       (when (call-graph-builder-is-complete? call-graph-builder)
+         (visit-completed-call-graph (call-graph-builder-call-graph call-graph-builder))
+         (set! call-graph-builder (make-call-graph-builder)))
+
+       the-return-value)))
+
+  (add-function 'around receptive-function around))
+
+(define (uninstall-call-graph! receptive-function)
+  (remove-function 'around receptive-function))
+
+(define call-graphs (make-gvector))
+
+(define (save-and-display-call-graph call-graph (output-file-path #f))
+  (gvector-add! call-graphs call-graph)
+  (when output-file-path
+    (call-with-output-file output-file-path
+      (lambda (out)
+        (display (graphviz call-graph) out))
+      #:exists 'replace)))
