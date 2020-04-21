@@ -1,24 +1,12 @@
 #lang racket
 
 (require data/gvector
-         "call-graph.rkt"
-         typed-stack)
+         typed-stack
+         "../additional-properties.rkt")
 
-(provide make-bottom-up-constant-space-procedure
-         can-make-bottom-up-constant-space-procedure?
-         get-subproblem-combination-function)
-
-(define (can-make-bottom-up-constant-space-procedure? call-graph)
-  (and (looks-like-function? call-graph) (uses-constant-space? call-graph)))
-
-(define (make-bottom-up-constant-space-procedure all-arguments update-function)
-  (match-let ([(list initial-values need-to-calculate)
-               (split-arguments-into-initial-values-and-need-to-calculate all-arguments)])
-    `(,@(make-definitions initial-values)
-      (for ([i (quote ,need-to-calculate)])
-        (define cur ,(make-current-update update-function (length initial-values)))
-        ,@(make-definition-updates (length initial-values)))
-      ,(number->definition-symbol 1))))
+(provide get-subproblem-combination-function
+         split-arguments-into-initial-values-and-need-to-calculate
+         make-optimized-function-helper)
 
 (define (get-subproblem-combination-function function-body function-identifier)
   (define the-subproblem (get-subproblem function-body function-identifier))
@@ -69,37 +57,19 @@
   (for ([arguments all-arguments])
     (match arguments
       [(list 'base-case arguments value)
-       (gvector-add! initial-values value)]
+       ;; TODO this needs to incorporate both arguments and value
+       (gvector-add! initial-values arguments)]
       [(list 'calculate arguments)
        (gvector-add! need-to-calculate arguments)]))
   (list (gvector->list initial-values) (gvector->list need-to-calculate)))
 
-(define (make-definitions initial-values)
-  (define counter (length initial-values))
-  (map
-   (lambda (value)
-     (define return-value
-       `(define ,(number->definition-symbol counter) ,value))
-     (set! counter (- counter 1))
-     return-value)
-   initial-values))
+(define (make-optimized-function-helper body)
+  (define the-optimized-function-as-data
+    `(lambda (,(gensym 'kws) ,(gensym 'kw-args) . ,(gensym 'rest))
+       ,@body))
+  
+  (define the-optimized-function (eval `(make-keyword-procedure ,the-optimized-function-as-data)))
 
-(define (make-current-update update-function number-definitions)
-  `(,update-function
-    ,@(stream->list
-       (stream-map
-        number->definition-symbol
-        (in-range 1 (+ 1 number-definitions))))))
+  (property-set! the-optimized-function 'body the-optimized-function-as-data)
 
-(define (make-definition-updates number-definitions)
-  (reverse
-   (cons `(set! ,(number->definition-symbol 1) cur)
-         (stream->list
-          (stream-map
-           (lambda (definition-number)
-             `(set! ,(number->definition-symbol definition-number)
-                    ,(number->definition-symbol (- definition-number 1))))
-           (in-range 2 (+ 1 number-definitions)))))))
-
-(define (number->definition-symbol definition-number)
-  (string->symbol (string-append "previous-" (number->string definition-number))))
+  the-optimized-function)
