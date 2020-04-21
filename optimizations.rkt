@@ -22,7 +22,7 @@
 
 (define (make-optimized-function-helper body)
   (define the-optimized-function-as-data
-    `(lambda (,(gensym 'kws) ,(gensym 'kw-args) ,(gensym 'rest))
+    `(lambda (,(gensym 'kws) ,(gensym 'kw-args) . ,(gensym 'rest))
          ,@body))
 
   (define the-optimized-function (eval `(make-keyword-procedure ,the-optimized-function-as-data)))

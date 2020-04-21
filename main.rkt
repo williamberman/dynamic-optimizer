@@ -6,6 +6,10 @@
          "additional-properties.rkt"
          "optimizer-repl.rkt")
 
+(provide test-1
+         test-2
+         test-3)
+
 (define (test-1)
   (install-call-graph! fib (lambda (call-graph) (save-and-display-call-graph
                                                  call-graph
