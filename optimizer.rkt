@@ -26,9 +26,10 @@
 
 (define (make-optimizer) (make-hash))
 
-;; TODO this assumes there can only be one optimization at any given time
 (define (optimizer-add-possible-optimization! optimizer args optimization)
-  (hash-set! optimizer args (available-optimization optimization disabled)))
+  (if (optimizer-has-optimization? optimizer args)
+      (raise "Optimization already present")
+      (hash-set! optimizer args (available-optimization optimization disabled))))
 
 (define (optimizer-enable-optimization! optimizer args)
   (set-available-optimization-state! (hash-ref optimizer args) enabled))
@@ -88,7 +89,9 @@
                  (define optimization (get-optimization
                                        (call-graph-builder-call-graph call-graph-builder)
                                        receptive-function))
-                 (when optimization
+                 (when (and optimization
+                            (not (optimizer-has-optimization? optimizer
+                                                              the-argument-list)))
                    (optimizer-add-possible-optimization! optimizer
                                                          the-argument-list
                                                          optimization))
