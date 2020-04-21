@@ -1,7 +1,7 @@
 #lang racket
 
 (require "call-graph.rkt"
-         (except-in "utils.rkt" around)
+         "utils.rkt"
          graph
          rackunit
          rackunit/text-ui)
