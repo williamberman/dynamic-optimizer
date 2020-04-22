@@ -2,7 +2,8 @@
 
 (require data/gvector
          typed-stack
-         "../additional-properties.rkt")
+         "../additional-properties.rkt"
+         "../call-graph.rkt")
 
 (provide get-subproblem-combination-function
          split-arguments-into-initial-values-and-need-to-calculate
@@ -55,12 +56,12 @@
   (define initial-values (make-gvector))
   (define need-to-calculate (make-gvector))
   (for ([arguments all-arguments])
-    (match arguments
-      [(list 'base-case arguments value)
-       ;; TODO this needs to incorporate both arguments and value
-       (gvector-add! initial-values arguments)]
-      [(list 'calculate arguments)
-       (gvector-add! need-to-calculate arguments)]))
+    (cond
+      [(eq? base-case (a-call-location arguments))
+       (gvector-add! initial-values (a-call-arguments arguments))]
+      [(eq? calculate (a-call-location arguments))
+       (gvector-add! need-to-calculate (a-call-arguments arguments))]
+      [#t (raise (format "Not known location: ~a" (a-call-location arguments)))]))
   (list (gvector->list initial-values) (gvector->list need-to-calculate)))
 
 (define (make-optimized-function-helper body)

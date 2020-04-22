@@ -11,6 +11,7 @@
          call-graph-builder-call-graph
          a-call-arguments
          a-call-return-value
+         a-call-location
          make-call-graph-builder
          call-graph-builder-pre-call
          call-graph-builder-post-call
@@ -25,10 +26,15 @@
          save-and-display-call-graph
          call-graphs
          install-call-graph!
-         uninstall-call-graph!)
+         uninstall-call-graph!
+         base-case
+         calculate)
+
+(define base-case 'base-case)
+(define calculate 'calculate)
 
 (struct a-call
-  (arguments return-value children-hash)
+  (arguments return-value children-hash [location #:auto #:mutable])
   #:transparent)
 
 (struct call-graph-builder
@@ -137,9 +143,9 @@
   (->i ([call-graph graph?]
         [node (call-graph) (curry all-children-are-leaves? call-graph)])
        [result (call-graph node) any/c])
-  (cons (list 'calculate (a-call-arguments node))
+  (cons (make-location-call node calculate)
         (map
-         (lambda (child) (make-base-case child))
+         (lambda (child) (make-location-call child base-case))
          (sort (get-neighbors call-graph node) >
                #:key (lambda (child)
                        (length (get-neighbors (transpose call-graph) child)))))))
@@ -151,19 +157,23 @@
     [(eq? node root-node)
      (call-graph->all-arguments-top-down call-graph (car (get-neighbors call-graph node)))]
     [(= 0 (length children))
-     (list (make-base-case node))]
+     (list (make-location-call node base-case))]
     [else
-     (begin
-       (with-handlers ([exn:fail:no-subproblem-found?
-                        (lambda (_)
-                          (call-graph->all-arguments-top-down-last-step call-graph node))])
-         (cons (list 'calculate (a-call-arguments node))
-               (call-graph->all-arguments-top-down
-                call-graph
-                (get-single-subproblem call-graph node)))))]))
+     (with-handlers ([exn:fail:no-subproblem-found?
+                      (lambda (_)
+                        (call-graph->all-arguments-top-down-last-step call-graph node))])
+       (cons (make-location-call node calculate)
+             (call-graph->all-arguments-top-down
+              call-graph
+              (get-single-subproblem call-graph node))))]))
 
-(define (make-base-case node)
-  (list 'base-case (a-call-arguments node) (a-call-return-value node)))
+(define (make-location-call the-call the-location)
+  (define the-new-call (a-call
+                        (a-call-arguments the-call)
+                        (a-call-return-value the-call)
+                        (a-call-children-hash the-call)))
+  (set-a-call-location! the-new-call the-location)
+  the-new-call)
 
 (define (call-graph->all-arguments-bottom-up . args)
   (reverse (apply call-graph->all-arguments-top-down args)))
