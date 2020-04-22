@@ -1,6 +1,7 @@
 #lang racket
 
-(require "fib.rkt"
+(require "./functions-to-optimize/fib.rkt"
+         "./functions-to-optimize/maximal-square.rkt"
          "call-graph.rkt"
          "optimizer.rkt"
          "additional-properties.rkt"
@@ -62,3 +63,18 @@
                         (property-ref fib-not-constant-space 'optimizer)
                         "fib-not-constant-space"))
   (uninstall-optimizer! fib-not-constant-space))
+
+(define (example-6)
+  (install-call-graph! maximal-square x-save-and-display-call-graph)
+  (parameterize ([maximal-square-matrix example-matrix-2])
+    (maximal-square 3 4))
+  (uninstall-call-graph! maximal-square))
+
+(define (example-7)
+  (install-optimizer! maximal-square)
+  (parameterize ([maximal-square-matrix example-matrix-2])
+    (maximal-square 3 4))
+  ((make-optimizer-repl maximal-square
+                        (property-ref maximal-square 'optimizer)
+                        "maximal-square"))
+  (uninstall-optimizer! maximal-square))

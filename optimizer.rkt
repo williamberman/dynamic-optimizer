@@ -4,8 +4,7 @@
          "optimizations.rkt"
          "additional-properties.rkt"
          "advice.rkt"
-         "utils.rkt"
-         (for-syntax racket/syntax syntax/parse))
+         "utils.rkt")
 
 (provide make-optimizer
          optimizer-add-possible-optimization!
@@ -16,8 +15,7 @@
          optimizer-optimization-is-enabled?
          optimizer-optimization-is-disabled?
          install-optimizer!
-         uninstall-optimizer!
-         define/optimizable)
+         uninstall-optimizer!)
 
 (struct available-optimization (optimization [state #:mutable]))
 
@@ -105,25 +103,3 @@
 (define (uninstall-optimizer! receptive-function)
   (property-remove! receptive-function 'optimizer)
   (remove-function 'around receptive-function))
-
-(define-syntax (define/optimizable stx)
-  (syntax-parse stx
-    [(_ (optimizable-identifier:id arg:id ...) body:expr)
-     (datum->syntax stx
-                    `(begin
-                       (require "additional-properties.rkt"
-                                "capture-literals.rkt"
-                                "advice.rkt")
-                       (define (,#'optimizable-identifier ,@#'(arg ...))
-                         ,#'body)
-                       (set! ,#'optimizable-identifier
-                             (make-receptive-function ,#'optimizable-identifier))
-                       (property-set! ,#'optimizable-identifier
-                                      'body
-                                      ,#''body)
-                       (property-set! ,#'optimizable-identifier
-                                      'function-identifier
-                                      ,#''optimizable-identifier)
-                       (property-set! ,#'optimizable-identifier
-                                      'function-signature
-                                      ,#''(arg ...))))]))

@@ -2,12 +2,13 @@
 
 (require "../call-graph.rkt"
          "common.rkt"
-         "../additional-properties.rkt")
+         "../additional-properties.rkt"
+         graph)
 
 (provide make-bottom-up-constant-space-procedure)
 
 (define (make-bottom-up-constant-space-procedure call-graph function)
-  (if (can-make-bottom-up-constant-space-procedure? call-graph)
+  (if (can-make-procedure? call-graph)
       (make-optimized-function-helper (make-body (call-graph->all-arguments-bottom-up call-graph)
                                                  (get-subproblem-combination-function
                                                   (property-ref function 'body)
@@ -25,8 +26,10 @@
         ,@(make-definition-updates (length initial-values)))
       ,(number->definition-symbol 1))))
 
-(define (can-make-bottom-up-constant-space-procedure? call-graph)
-  (and (looks-like-function? call-graph) (uses-constant-space? call-graph)))
+(define (can-make-procedure? call-graph)
+  (and (dag? call-graph)
+       (looks-like-function? call-graph)
+       (uses-constant-space? call-graph)))
 
 (define (make-definitions initial-values)
   (define counter (length initial-values))

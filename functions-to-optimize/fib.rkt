@@ -1,6 +1,6 @@
 #lang racket
 
-(require "optimizer.rkt")
+(require "common.rkt")
 
 (provide fib
          fib-3-back

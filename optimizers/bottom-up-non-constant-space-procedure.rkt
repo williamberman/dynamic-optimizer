@@ -7,15 +7,20 @@
 
 (provide make-bottom-up-non-constant-space-procedure)
 
-;; TODO provide a check here to see if the optimization can be applied
 (define (make-bottom-up-non-constant-space-procedure call-graph function)
-  (make-optimized-function-helper (make-body call-graph
-                                             (call-graph->all-arguments-bottom-up call-graph)
-                                             (get-subproblem-combination-function
-                                              (property-ref function 'body)
-                                              (property-ref function 'function-identifier)
-                                              (property-ref function 'function-signature)
-                                              #:variable-number-of-arguments #t))))
+  (if (can-make-procedure? call-graph)
+      (make-optimized-function-helper (make-body call-graph
+                                                 (call-graph->all-arguments-bottom-up call-graph)
+                                                 (get-subproblem-combination-function
+                                                  (property-ref function 'body)
+                                                  (property-ref function 'function-identifier)
+                                                  (property-ref function 'function-signature)
+                                                  #:variable-number-of-arguments #t)))
+      #f))
+
+(define (can-make-procedure? call-graph)
+  (and (dag? call-graph)
+       (looks-like-function? call-graph)))
 
 (define (make-body call-graph all-arguments update-function)
   (match-let ([(list initial-values need-to-calculate)
