@@ -4,14 +4,14 @@
          graph
          "utils.rkt"
          data/gvector
-         "advice.rkt")
+         "advice.rkt"
+         "additional-properties.rkt")
 
 (provide a-call
          a-call?
          call-graph-builder-call-graph
          a-call-arguments
          a-call-return-value
-         a-call-location
          make-call-graph-builder
          call-graph-builder-pre-call
          call-graph-builder-post-call
@@ -34,7 +34,7 @@
 (define calculate 'calculate)
 
 (struct a-call
-  (arguments return-value children-hash [location #:auto #:mutable])
+  (arguments return-value children-hash)
   #:transparent)
 
 (struct call-graph-builder
@@ -168,11 +168,8 @@
               (get-single-subproblem call-graph node))))]))
 
 (define (make-location-call the-call the-location)
-  (define the-new-call (a-call
-                        (a-call-arguments the-call)
-                        (a-call-return-value the-call)
-                        (a-call-children-hash the-call)))
-  (set-a-call-location! the-new-call the-location)
+  (define the-new-call (struct-copy a-call the-call))
+  (property-set! the-new-call 'location the-location)
   the-new-call)
 
 (define (call-graph->all-arguments-bottom-up . args)

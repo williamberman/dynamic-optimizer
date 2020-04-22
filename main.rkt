@@ -18,7 +18,9 @@
                                                     call-graph
                                                     "/tmp/call-graph.dot"))
 
-(add-optimizer! make-bottom-up-constant-space-procedure)
+(define (init)
+  (add-optimizer! make-bottom-up-constant-space-procedure)
+  (add-optimizer! make-bottom-up-non-constant-space-procedure))
 
 (define (example-1)
   (install-call-graph! fib x-save-and-display-call-graph)
@@ -45,6 +47,12 @@
   (uninstall-optimizer! fib-3-back))
 
 (define (example-4)
+  (install-call-graph! fib-not-constant-space x-save-and-display-call-graph)
+  (fib-not-constant-space 5)
+  (fib-not-constant-space 6)
+  (uninstall-call-graph! fib-not-constant-space))
+
+(define (example-5)
   (install-optimizer! fib-not-constant-space)
   (fib-not-constant-space 5)
   (fib-not-constant-space 9)
@@ -54,9 +62,3 @@
                         (property-ref fib-not-constant-space 'optimizer)
                         "fib-not-constant-space"))
   (uninstall-optimizer! fib-not-constant-space))
-
-(define (example-5)
-  (install-call-graph! fib-not-constant-space x-save-and-display-call-graph)
-  (fib-not-constant-space 5)
-  (fib-not-constant-space 6)
-  (uninstall-call-graph! fib-not-constant-space))

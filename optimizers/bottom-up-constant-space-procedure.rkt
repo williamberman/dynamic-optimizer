@@ -8,18 +8,19 @@
 
 (define (make-bottom-up-constant-space-procedure call-graph function)
   (if (can-make-bottom-up-constant-space-procedure? call-graph)
-      (make-optimized-function-helper (make-body
-                                       (call-graph->all-arguments-bottom-up call-graph)
-                                       (get-subproblem-combination-function
-                                        (property-ref function 'body)
-                                        (property-ref function 'function-identifier))))
+      (make-optimized-function-helper (make-body (call-graph->all-arguments-bottom-up call-graph)
+                                                 (get-subproblem-combination-function
+                                                  (property-ref function 'body)
+                                                  (property-ref function 'function-identifier)
+                                                  (property-ref function 'function-signature))))
       #f))
 
 (define (make-body all-arguments update-function)
   (match-let ([(list initial-values need-to-calculate)
                (split-arguments-into-initial-values-and-need-to-calculate all-arguments)])
     `(,@(make-definitions initial-values)
-      (for ([i (quote ,need-to-calculate)])
+      (for ([i (quote ,(map a-call-arguments
+                            need-to-calculate))])
         (define cur ,(make-current-update update-function (length initial-values)))
         ,@(make-definition-updates (length initial-values)))
       ,(number->definition-symbol 1))))
@@ -30,9 +31,9 @@
 (define (make-definitions initial-values)
   (define counter (length initial-values))
   (map
-   (lambda (value)
+   (lambda (the-call)
      (define return-value
-       `(define ,(number->definition-symbol counter) ,value))
+       `(define ,(number->definition-symbol counter) ,(a-call-return-value the-call)))
      (set! counter (- counter 1))
      return-value)
    initial-values))

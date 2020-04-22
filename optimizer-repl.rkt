@@ -7,8 +7,6 @@
 
 (provide make-optimizer-repl)
 
-;; TODO something in here is causing the second read
-;; to hang when running the repl in emacs.
 (define (make-optimizer-repl function optimizer name)
   (define this-repl-state (repl-state function optimizer (make-hash)))
 
