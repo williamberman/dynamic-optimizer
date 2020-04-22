@@ -7,6 +7,7 @@
 
 (provide make-bottom-up-non-constant-space-procedure)
 
+;; TODO provide a check here to see if the optimization can be applied
 (define (make-bottom-up-non-constant-space-procedure call-graph function)
   (make-optimized-function-helper (make-body call-graph
                                              (call-graph->all-arguments-bottom-up call-graph)
