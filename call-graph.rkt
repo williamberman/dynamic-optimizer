@@ -21,14 +21,15 @@
          uses-constant-space?
          get-single-subproblem
          all-children-are-leaves?
-         call-graph->all-arguments-top-down
-         call-graph->all-arguments-bottom-up
+         constant-space-call-graph->all-arguments-top-down
+         constant-space-call-graph->all-arguments-bottom-up
          save-and-display-call-graph
          call-graphs
          install-call-graph!
          uninstall-call-graph!
          base-case
-         calculate)
+         calculate
+         call-graph->all-arguments-bottom-up)
 
 (define base-case 'base-case)
 (define calculate 'calculate)
@@ -109,7 +110,8 @@
   (apply get-constant-space-used% (cons call-graph args)))
 
 (define (uses-constant-space? . args)
-  (with-handlers ([exn:fail:not-a-constant-space-call-graph? (lambda (_) #f)])
+  (with-handlers ([exn:fail:not-a-constant-space-call-graph? (lambda (_) #f)]
+                  [exn:fail:no-subproblem-found? (lambda (_) #f)])
     (apply get-constant-space-used args)
     #t))
 
@@ -139,7 +141,7 @@
               (current-continuation-marks)
               call-graph node))))
 
-(define/contract (call-graph->all-arguments-top-down-last-step call-graph node)
+(define/contract (constant-space-call-graph->all-arguments-top-down-last-step call-graph node)
   (->i ([call-graph graph?]
         [node (call-graph) (curry all-children-are-leaves? call-graph)])
        [result (call-graph node) any/c])
@@ -151,19 +153,19 @@
                        (length (get-neighbors (transpose call-graph) child)))))))
 
 
-(define (call-graph->all-arguments-top-down call-graph (node root-node))
+(define (constant-space-call-graph->all-arguments-top-down call-graph (node root-node))
   (define children (get-neighbors call-graph node))
   (cond
     [(eq? node root-node)
-     (call-graph->all-arguments-top-down call-graph (car (get-neighbors call-graph node)))]
+     (constant-space-call-graph->all-arguments-top-down call-graph (car (get-neighbors call-graph node)))]
     [(= 0 (length children))
      (list (make-location-call node base-case))]
     [else
      (with-handlers ([exn:fail:no-subproblem-found?
                       (lambda (_)
-                        (call-graph->all-arguments-top-down-last-step call-graph node))])
+                        (constant-space-call-graph->all-arguments-top-down-last-step call-graph node))])
        (cons (make-location-call node calculate)
-             (call-graph->all-arguments-top-down
+             (constant-space-call-graph->all-arguments-top-down
               call-graph
               (get-single-subproblem call-graph node))))]))
 
@@ -172,8 +174,16 @@
   (property-set! the-new-call 'location the-location)
   the-new-call)
 
-(define (call-graph->all-arguments-bottom-up . args)
-  (reverse (apply call-graph->all-arguments-top-down args)))
+(define (constant-space-call-graph->all-arguments-bottom-up . args)
+  (reverse (apply constant-space-call-graph->all-arguments-top-down args)))
+
+(define (call-graph->all-arguments-bottom-up call-graph)
+  (map (lambda (the-call)
+         (define the-location (if (= 0 (length (get-neighbors call-graph the-call)))
+                                  base-case
+                                  calculate))
+         (make-location-call the-call the-location))
+       (butlast (tsort (transpose call-graph)))))
 
 (define (install-call-graph! receptive-function visit-completed-call-graph)
   (define call-graph-builder (make-call-graph-builder))
@@ -208,7 +218,10 @@
 (define (save-and-display-call-graph call-graph (output-file-path #f))
   (gvector-add! call-graphs call-graph)
   (when output-file-path
-    (call-with-output-file output-file-path
+    (display-call-graph call-graph output-file-path)))
+
+(define (display-call-graph call-graph output-file-path)
+  (call-with-output-file output-file-path
       (lambda (out)
         (display (graphviz call-graph) out))
-      #:exists 'replace)))
+      #:exists 'replace))

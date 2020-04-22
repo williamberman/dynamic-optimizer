@@ -2,6 +2,7 @@
 
 (require "../additional-properties.rkt"
          "../call-graph.rkt"
+         "../utils.rkt"
          "common.rkt"
          graph)
 

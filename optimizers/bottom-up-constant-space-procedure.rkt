@@ -9,7 +9,8 @@
 
 (define (make-bottom-up-constant-space-procedure call-graph function)
   (if (can-make-procedure? call-graph)
-      (make-optimized-function-helper (make-body (call-graph->all-arguments-bottom-up call-graph)
+      (make-optimized-function-helper (make-body (constant-space-call-graph->all-arguments-bottom-up
+                                                  call-graph)
                                                  (get-subproblem-combination-function
                                                   (property-ref function 'body)
                                                   (property-ref function 'function-identifier)
