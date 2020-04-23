@@ -1,22 +1,25 @@
-TODO There's a vocab discrepancy for optimization, optimizer, and optimizable. Sort it out
+TODO There's a vocab discrepancy for optimization, optimizer, and optimizable. Sort it out.
 
 The goal here is to do provide a framework for optimization of code at run time and provide
 a few example optimizations that can be performed. Optimizations are more focused on being
 human readable as opposed to being correct such that an individual can read and then modify
 the optimization if they so wish.
 
+The macros which produce the optimizations are quite hairy and require the optimized
+functions to be written a certain way. Rather than documenting all the corner cases,
+I'd rather take the time to make the macros work better.
+
 Example optimization of the fibonacci sequence to take advantage of dynamic programming.
 ```
-;; TODO format me
 > (define/optimizable (fib n)
      (cond ((= n 0) 0)
            ((= n 1) 1)
            (#t (+ (fib (- n 1))
                   (fib (- n 2))))))
-> (install-optimizer! fib-3-back)
+> (install-optimizer! fib)
 > (fib 5)
 5
-> ((make-optimizer-repl fib-3-back))
+> ((make-optimizer-repl fib))
 > (available)
 Available optimizations
 (5)
@@ -42,9 +45,7 @@ Available optimizations
 > (enable 5)
 > (call 5)
 5
-
 ```
-
 
 The optimizations only work on a single function which calls itself recursively.
 
@@ -88,10 +89,11 @@ The optimization may again enabled later. Arguments should be in the same order 
 
 (quit): Exit the repl.
 
-
 make-bottom-up-constant-space-procedure
-make-bottom-up-non-constant-space-procedure
+This optimization looks for a set of recursive calls with redundant work that can be unrolled into a for loop with
+no repeated work. I.e. dynamic programming. The optimizied function uses a constant amount of storage.
 
-## 
-```racket
-```
+make-bottom-up-non-constant-space-procedure
+This optimization looks for a set of recursive calls that can be unrolled into a for loop with no repeated work.
+The optimized function stores intermediate results such that the procedure uses linear space.
+
