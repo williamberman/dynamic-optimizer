@@ -17,11 +17,11 @@ This is an educational framework for runtime optimization. The focus is on produ
      (make-evaluator 'racket
                      "(set-optimizer-repl-display-initial-help-message! #f)"
                      #:requires '("optimizer.rkt"
-                                          "optimizer-repl.rkt"
-                                          "optimizations.rkt"
-                                          "optimizers/bottom-up-constant-space-procedure.rkt"
-                                          "advice.rkt"
-                                          "additional-properties.rkt"))))
+                                  "optimizer-repl.rkt"
+                                  "optimizations.rkt"
+                                  "optimizer-plugins/bottom-up-constant-space-procedure.rkt"
+                                  "advice.rkt"
+                                  "additional-properties.rkt"))))
 
 @examples[#:eval my-evaluator
           (enable-optimizer-plugin! make-bottom-up-constant-space-procedure)
