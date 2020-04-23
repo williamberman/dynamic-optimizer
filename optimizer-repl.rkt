@@ -5,9 +5,14 @@
          data/gvector
          racket/exn)
 
-(provide make-optimizer-repl)
+(provide make-optimizer-repl
+         set-optimizer-repl-display-initial-help-message!)
 
-(define (make-optimizer-repl function)
+(define (set-optimizer-repl-display-initial-help-message! value)
+  (set! optimizer-repl-display-initial-help-message value))
+(define optimizer-repl-display-initial-help-message #t)
+
+(define (make-optimizer-repl function (instructions #f))
   (define optimizer (property-ref function 'optimizer))
   (define name (symbol->string (property-ref function 'function-identifier)))
 
@@ -15,7 +20,15 @@
 
   (define (the-read)
     (display (string-append "optimizer:" name "> "))
-    (read))
+    (if instructions
+        (let ([the-instruction (if (empty? instructions)
+                                   '(quit)
+                                   (let ([the-instruction (car instructions)])
+                                     (set! instructions (cdr instructions))
+                                     the-instruction))])
+          (displayln the-instruction)
+          the-instruction)
+        (read)))
 
   (define (the-eval input)
     (match input
@@ -48,7 +61,8 @@
 
   (lambda ()
     (parameterize ([the-repl-state this-repl-state])
-      (the-print (help))
+      (when optimizer-repl-display-initial-help-message
+        (the-print (help)))
       (the-loop))))
 
 (struct repl-state (function optimizer changes))

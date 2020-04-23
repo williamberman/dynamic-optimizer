@@ -4,15 +4,15 @@
          "utils.rkt")
 
 (provide get-optimization
-         add-optimizer!
-         reset-optimizers!)
+         enable-optimizer-plugin!
+         reset-optimizer-plugins!)
 
 (define optimizers (make-gvector))
 
-(define (add-optimizer! optimizer)
+(define (enable-optimizer-plugin! optimizer)
   (gvector-add! optimizers optimizer))
 
-(define (reset-optimizers!) (set! optimizers (make-gvector)))
+(define (reset-optimizer-plugins!) (set! optimizers (make-gvector)))
 
 (define (get-optimization call-graph function)
   (define the-optimized-function #f)

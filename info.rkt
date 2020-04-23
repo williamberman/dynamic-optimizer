@@ -7,3 +7,4 @@
                "graph-lib"
                "rackunit-lib"
                "typed-stack"))
+(define scribblings '(("manual.scrbl" ())))

@@ -1,6 +1,8 @@
 #lang racket
 
-(require "common.rkt")
+(require "../additional-properties.rkt"
+         "../advice.rkt"
+         "../optimizer.rkt")
 
 (provide fib
          fib-3-back

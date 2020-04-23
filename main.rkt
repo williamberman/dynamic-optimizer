@@ -4,10 +4,9 @@
          "./functions-to-optimize/maximal-square.rkt"
          "call-graph.rkt"
          "optimizer.rkt"
-         "additional-properties.rkt"
          "optimizer-repl.rkt"
-         "optimizers/bottom-up-constant-space-procedure.rkt"
-         "optimizers/bottom-up-non-constant-space-procedure.rkt"
+         "optimizer-plugins/bottom-up-constant-space-procedure.rkt"
+         "optimizer-plugins/bottom-up-non-constant-space-procedure.rkt"
          "optimizations.rkt"
          graph)
 
@@ -29,24 +28,24 @@
   (uninstall-call-graph! fib))
 
 (define (example-2)
-  (add-optimizer! make-bottom-up-constant-space-procedure)
+  (enable-optimizer-plugin! make-bottom-up-constant-space-procedure)
   (install-optimizer! fib)
   (fib 5)
   (fib 9)
   (fib 8)
   ((make-optimizer-repl fib))
   (uninstall-optimizer! fib)
-  (reset-optimizers!))
+  (reset-optimizer-plugins!))
 
 (define (example-3)
-  (add-optimizer! make-bottom-up-constant-space-procedure)
+  (enable-optimizer-plugin! make-bottom-up-constant-space-procedure)
   (install-optimizer! fib-3-back)
   (fib-3-back 5)
   (fib-3-back 9)
   (fib-3-back 8)
   ((make-optimizer-repl fib-3-back))
   (uninstall-optimizer! fib-3-back)
-  (reset-optimizers!))
+  (reset-optimizer-plugins!))
 
 (define (example-4)
   (install-call-graph! fib-not-constant-space x-display-call-graph)
@@ -55,19 +54,19 @@
   (uninstall-call-graph! fib-not-constant-space))
 
 (define (example-5)
-  (add-optimizer! make-bottom-up-constant-space-procedure)
+  (enable-optimizer-plugin! make-bottom-up-constant-space-procedure)
   (install-optimizer! fib-not-constant-space)
   (fib-not-constant-space 5)
   (fib-not-constant-space 9)
   (fib-not-constant-space 8)
   ((make-optimizer-repl fib-not-constant-space))
-  (add-optimizer! make-bottom-up-non-constant-space-procedure)
+  (enable-optimizer-plugin! make-bottom-up-non-constant-space-procedure)
   (fib-not-constant-space 5)
   (fib-not-constant-space 9)
   (fib-not-constant-space 8)
   ((make-optimizer-repl fib-not-constant-space))
   (uninstall-optimizer! fib-not-constant-space)
-  (reset-optimizers!))
+  (reset-optimizer-plugins!))
 
 (define (example-6)
   (install-call-graph! maximal-square x-display-call-graph)
@@ -76,11 +75,11 @@
   (uninstall-call-graph! maximal-square))
 
 (define (example-7)
-  (add-optimizer! make-bottom-up-constant-space-procedure)
-  (add-optimizer! make-bottom-up-non-constant-space-procedure)
+  (enable-optimizer-plugin! make-bottom-up-constant-space-procedure)
+  (enable-optimizer-plugin! make-bottom-up-non-constant-space-procedure)
   (install-optimizer! maximal-square)
   (parameterize ([maximal-square-matrix example-matrix-2])
     (maximal-square 3 4)
     ((make-optimizer-repl maximal-square)))
   (uninstall-optimizer! maximal-square)
-  (reset-optimizers!))
+  (reset-optimizer-plugins!))
