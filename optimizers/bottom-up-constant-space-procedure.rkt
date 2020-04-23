@@ -21,7 +21,7 @@
   (match-let ([(list initial-values need-to-calculate)
                (split-arguments-into-initial-values-and-need-to-calculate all-arguments)])
     `(,@(make-definitions initial-values)
-      (for ([i (quote ,(map a-call-arguments
+      (for ([computing-for (quote ,(map a-call-arguments
                             need-to-calculate))])
         (define cur ,(make-current-update update-function (length initial-values)))
         ,@(make-definition-updates (length initial-values)))
@@ -43,11 +43,14 @@
    initial-values))
 
 (define (make-current-update update-function number-definitions)
-  `(,update-function
-    ,@(stream->list
-       (stream-map
-        number->definition-symbol
-        (in-range 1 (+ 1 number-definitions))))))
+  `(keyword-apply
+    ,update-function
+    '(#:currently-computing)
+    (list computing-for)
+    (list ,@(stream->list
+             (stream-map
+              number->definition-symbol
+              (in-range 1 (+ 1 number-definitions)))))))
 
 (define (make-definition-updates number-definitions)
   (reverse

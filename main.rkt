@@ -8,17 +8,22 @@
          "optimizer-repl.rkt"
          "optimizers/bottom-up-constant-space-procedure.rkt"
          "optimizers/bottom-up-non-constant-space-procedure.rkt"
-         "optimizations.rkt")
+         "optimizations.rkt"
+         graph)
 
-
-
-;; fswatch -0 /tmp/call-graph.dot | xargs -0 -I \{\} dot -Tpng -o/tmp/call-graph.png /tmp/call-graph.dot
-(define (x-save-and-display-call-graph call-graph) (save-and-display-call-graph
-                                                    call-graph
-                                                    "/tmp/call-graph.dot"))
+;; To convert the outputted dot files
+;; fswatch -0 /tmp/call-graph.dot | \
+;;        xargs -0 -I \{\} dot -Tpng -o/tmp/call-graph.png /tmp/call-graph.dot
+;; fswatch -0 /tmp/call-graph-transpose.dot | \
+;;        xargs -0 -I \{\} dot -Tpng -o/tmp/call-graph-transpose.png /tmp/call-graph-transpose.dot
+(define (x-display-call-graph call-graph)
+  (display-call-graph call-graph
+                      "/tmp/call-graph.dot")
+  (display-call-graph (transpose call-graph)
+                      "/tmp/call-graph-transpose.dot"))
 
 (define (example-1)
-  (install-call-graph! fib x-save-and-display-call-graph)
+  (install-call-graph! fib x-display-call-graph)
   (fib 5)
   (fib 6)
   (uninstall-call-graph! fib))
@@ -44,7 +49,7 @@
   (reset-optimizers!))
 
 (define (example-4)
-  (install-call-graph! fib-not-constant-space x-save-and-display-call-graph)
+  (install-call-graph! fib-not-constant-space x-display-call-graph)
   (fib-not-constant-space 5)
   (fib-not-constant-space 6)
   (uninstall-call-graph! fib-not-constant-space))
@@ -69,7 +74,7 @@
   (reset-optimizers!))
 
 (define (example-6)
-  (install-call-graph! maximal-square x-save-and-display-call-graph)
+  (install-call-graph! maximal-square x-display-call-graph)
   (parameterize ([maximal-square-matrix example-matrix-2])
     (maximal-square 3 4))
   (uninstall-call-graph! maximal-square))

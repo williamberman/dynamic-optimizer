@@ -29,7 +29,8 @@
          uninstall-call-graph!
          base-case
          calculate
-         call-graph->all-arguments-bottom-up)
+         call-graph->all-arguments-bottom-up
+         display-call-graph)
 
 (define base-case 'base-case)
 (define calculate 'calculate)
