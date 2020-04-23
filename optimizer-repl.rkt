@@ -7,7 +7,10 @@
 
 (provide make-optimizer-repl)
 
-(define (make-optimizer-repl function optimizer name)
+(define (make-optimizer-repl function)
+  (define optimizer (property-ref function 'optimizer))
+  (define name (symbol->string (property-ref function 'function-identifier)))
+
   (define this-repl-state (repl-state function optimizer (make-hash)))
 
   (define (the-read)

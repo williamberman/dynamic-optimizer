@@ -34,7 +34,7 @@
   (fib 5)
   (fib 9)
   (fib 8)
-  ((make-optimizer-repl fib (property-ref fib 'optimizer) "fib"))
+  ((make-optimizer-repl fib))
   (uninstall-optimizer! fib)
   (reset-optimizers!))
 
@@ -44,7 +44,7 @@
   (fib-3-back 5)
   (fib-3-back 9)
   (fib-3-back 8)
-  ((make-optimizer-repl fib-3-back (property-ref fib-3-back 'optimizer) "fib-3-back"))
+  ((make-optimizer-repl fib-3-back))
   (uninstall-optimizer! fib-3-back)
   (reset-optimizers!))
 
@@ -60,16 +60,12 @@
   (fib-not-constant-space 5)
   (fib-not-constant-space 9)
   (fib-not-constant-space 8)
-  ((make-optimizer-repl fib-not-constant-space
-                        (property-ref fib-not-constant-space 'optimizer)
-                        "fib-not-constant-space"))
+  ((make-optimizer-repl fib-not-constant-space))
   (add-optimizer! make-bottom-up-non-constant-space-procedure)
   (fib-not-constant-space 5)
   (fib-not-constant-space 9)
   (fib-not-constant-space 8)
-  ((make-optimizer-repl fib-not-constant-space
-                        (property-ref fib-not-constant-space 'optimizer)
-                        "fib-not-constant-space"))
+  ((make-optimizer-repl fib-not-constant-space))
   (uninstall-optimizer! fib-not-constant-space)
   (reset-optimizers!))
 
@@ -85,8 +81,6 @@
   (install-optimizer! maximal-square)
   (parameterize ([maximal-square-matrix example-matrix-2])
     (maximal-square 3 4)
-    ((make-optimizer-repl maximal-square
-                          (property-ref maximal-square 'optimizer)
-                          "maximal-square")))
+    ((make-optimizer-repl maximal-square)))
   (uninstall-optimizer! maximal-square)
   (reset-optimizers!))
