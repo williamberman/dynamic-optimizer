@@ -47,6 +47,26 @@
                                   (list '+ a b)))
                       #t]
                      [else #f])
-                   #t))))
+                   #t))
+
+   (test-case "non-constant depth recursive call"
+     (define the-function '(if (or (= row 0) (= column 0))
+                               (list ((maximal-square-matrix) row column)
+                                     ((maximal-square-matrix) row column))
+                               (let ([dependent-on (list (maximal-square (- row 1) column)
+                                                         (maximal-square row (- column 1))
+                                                         (maximal-square (- row 1) (- column 1)))])
+                                 (define current (if (= 0 ((maximal-square-matrix) row column))
+                                                     0
+                                                     (+ 1 (apply min (map car dependent-on)))))
+                                 
+                                 (define max-seen (apply max (cons current (map cadr dependent-on))))
+                                 
+                                 (list current max-seen))))
+     (define the-subproblem (get-subproblem-combination-function the-function
+                                                                 'maximal-square
+                                                                 '(row column)))
+
+     (displayln the-subproblem))))
 
 (run-tests common-tests)

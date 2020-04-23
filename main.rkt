@@ -73,8 +73,8 @@
 (define (example-7)
   (install-optimizer! maximal-square)
   (parameterize ([maximal-square-matrix example-matrix-2])
-    (maximal-square 3 4))
-  ((make-optimizer-repl maximal-square
-                        (property-ref maximal-square 'optimizer)
-                        "maximal-square"))
+    (maximal-square 3 4)
+    ((make-optimizer-repl maximal-square
+                          (property-ref maximal-square 'optimizer)
+                          "maximal-square")))
   (uninstall-optimizer! maximal-square))

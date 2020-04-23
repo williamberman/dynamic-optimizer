@@ -2,7 +2,6 @@
 
 (require "../additional-properties.rkt"
          "../call-graph.rkt"
-         "../utils.rkt"
          "common.rkt"
          graph)
 
@@ -40,7 +39,7 @@
 
 (define (make-results-hash-initial-values initial-values)
   (map (lambda (a-call)
-         `(,(a-call-arguments a-call) . ,(a-call-return-value a-call)))
+         (cons (a-call-arguments a-call) (a-call-return-value a-call)))
        initial-values))
 
 (define (make-dependent-on call-graph need-to-calculate)
