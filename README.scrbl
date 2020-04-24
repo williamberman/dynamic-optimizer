@@ -54,28 +54,28 @@ This is an educational framework for runtime optimization. The focus is on produ
          void?]{Attach an optimizer to @racket[function]. Calls to @racket[function] will now be watched to see if any optimizations apply. Just installing an optimizer won't have any affect on the functions behavior because found optimizations have to be explicitly enabled.}
 
 @defproc[(make-optimizer-repl [function optimizable-function?]
-                              [commands-to-execute (listof any/c?)])
-         (-> void?)]{Returns a thunk that runs an optimizer REPL for @racket[function] when called. A non-interactive repl can be created by passing @racket[commands-to-execute] which will be executed sequentially by the repl.}
+                              [commands-to-execute (or/c #f (listof any/c?))])
+         (-> void?)]{Returns a thunk that runs an optimizer REPL for @racket[function] when called. A non-interactive REPL can be created by passing @racket[commands-to-execute] which will be executed sequentially by the repl.}
 
 @section{Optimizer REPL functions}
 
-All optimizer repl functions are enabled while in an optimizer REPL session and apply to the function that was used to create the REPL.
+All optimizer REPL functions are enabled while in an optimizer REPL session and apply to the function that was used to create the REPL.
 
-@defproc[(call [argument any?] ...) any?]{Call the function with the given arguments}
+@defproc[(call [argument any?] ...) any?]{Call the function with @racket[argument]s}
 
 @defproc[(available) void?]{Display the arguments for the optimizations which have been discovered but not enabled.}
 
-@defproc[(view [argument any?] ...) void?]{View the body of the optimization that was discovered for the given arguments. Arguments should be in the same order as displayed by @racket[available].}
+@defproc[(view [argument any?] ...) void?]{View the body of the optimization that was discovered for @racket[argument]s. @racket[argument]s should be in the same order as displayed by @racket[available].}
 
-@defproc[(enable [argument any?] ...) void?]{Enable the optimization that was discovered for the given arguments. The optimization may be later disabled. Arguments should be in the same order as displayed by @racket[available].}
+@defproc[(enable [argument any?] ...) void?]{Enable the optimization that was discovered for @racket[argument]s. The optimization may be later disabled. @racket[argument]s should be in the same order as displayed by @racket[available].}
 
-@defproc[(disable [argument any?] ...) void?]{Disable the optimization that was discovered for racket[argument]s. The optimization may again enabled later. Arguments should be in the same order as displayed by @racket[available].}
+@defproc[(disable [argument any?] ...) void?]{Disable the optimization that was discovered for @racket[argument]s. The optimization may again enabled later. @racket[argument]s should be in the same order as displayed by @racket[available].}
 
-@defproc[(changes) void?]{Display the optimizations enabled/disabled during the current repl session.}
+@defproc[(changes) void?]{Display the optimizations enabled/disabled during the current REPL session.}
 
-@defproc[(help) void?]{Display the repl documentation.}
+@defproc[(help) void?]{Display the REPL documentation.}
 
-@defproc[(quit) void?]{Exit the repl.}
+@defproc[(quit) void?]{Exit the REPL.}
 
 @section{Optimizer Plugins}
 

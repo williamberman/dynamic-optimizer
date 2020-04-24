@@ -99,16 +99,16 @@ optimizations have to be explicitly enabled.
 (make-optimizer-repl function                          
                      commands-to-execute) -> (-> void?)
   function : optimizable-function?                     
-  commands-to-execute : (listof any/c?)                
+  commands-to-execute : (or/c #f (listof any/c?))      
 ```
 
 Returns a thunk that runs an optimizer REPL for `function` when called.
-A non-interactive repl can be created by passing `commands-to-execute`
+A non-interactive REPL can be created by passing `commands-to-execute`
 which will be executed sequentially by the repl.
 
 ## 3. Optimizer REPL functions
 
-All optimizer repl functions are enabled while in an optimizer REPL
+All optimizer REPL functions are enabled while in an optimizer REPL
 session and apply to the function that was used to create the REPL.
 
 ```racket
@@ -116,7 +116,7 @@ session and apply to the function that was used to create the REPL.
   argument : any?          
 ```
 
-Call the function with the given arguments
+Call the function with `argument`s
 
 ```racket
 (available) -> void?
@@ -130,17 +130,16 @@ but not enabled.
   argument : any?           
 ```
 
-View the body of the optimization that was discovered for the given
-arguments. Arguments should be in the same order as displayed by
-`available`.
+View the body of the optimization that was discovered for `argument`s.
+`argument`s should be in the same order as displayed by `available`.
 
 ```racket
 (enable argument ...) -> void?
   argument : any?             
 ```
 
-Enable the optimization that was discovered for the given arguments. The
-optimization may be later disabled. Arguments should be in the same
+Enable the optimization that was discovered for `argument`s. The
+optimization may be later disabled. `argument`s should be in the same
 order as displayed by `available`.
 
 ```racket
@@ -148,28 +147,28 @@ order as displayed by `available`.
   argument : any?              
 ```
 
-Disable the optimization that was discovered for racket\[argument\]s.
-The optimization may again enabled later. Arguments should be in the
-same order as displayed by `available`.
+Disable the optimization that was discovered for `argument`s. The
+optimization may again enabled later. `argument`s should be in the same
+order as displayed by `available`.
 
 ```racket
 (changes) -> void?
 ```
 
-Display the optimizations enabled/disabled during the current repl
+Display the optimizations enabled/disabled during the current REPL
 session.
 
 ```racket
 (help) -> void?
 ```
 
-Display the repl documentation.
+Display the REPL documentation.
 
 ```racket
 (quit) -> void?
 ```
 
-Exit the repl.
+Exit the REPL.
 
 ## 4. Optimizer Plugins
 
