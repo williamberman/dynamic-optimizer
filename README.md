@@ -184,7 +184,8 @@ Optimizer plugins look for optimizations.
 
 Looks for a set of recursive calls with redundant work that can be
 unrolled into a for loop with no repeated work. The produced optimizied
-function uses a constant amount of storage.
+function uses a constant amount of storage. Returns `#f` if an
+optimization cannot be found.
 
 ```racket
 (make-bottom-up-non-constant-space-procedure call-graph 
@@ -196,7 +197,8 @@ function uses a constant amount of storage.
 
 Looks for a set of recursive calls that can be unrolled into a for loop
 with no repeated work. The optimized function stores intermediate
-results such that the procedure uses linear space.
+results such that the procedure uses linear space. Returns `#f` if an
+optimization cannot be found.
 
 ## 5. Notes
 

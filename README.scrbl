@@ -82,10 +82,10 @@ All optimizer REPL functions are enabled while in an optimizer REPL session and 
 Optimizer plugins look for optimizations.
 
 @defproc[(make-bottom-up-constant-space-procedure [call-graph graph?] [function optimizable-function?])
-         (or/c procedure? #f)]{Looks for a set of recursive calls with redundant work that can be unrolled into a for loop with no repeated work. The produced optimizied function uses a constant amount of storage.}
+         (or/c procedure? #f)]{Looks for a set of recursive calls with redundant work that can be unrolled into a for loop with no repeated work. The produced optimizied function uses a constant amount of storage. Returns @racket[#f] if an optimization cannot be found.}
 
 @defproc[(make-bottom-up-non-constant-space-procedure [call-graph graph?] [function optimizable-function?])
-         (or/c procedure? #f)]{Looks for a set of recursive calls that can be unrolled into a for loop with no repeated work. The optimized function stores intermediate results such that the procedure uses linear space.}
+         (or/c procedure? #f)]{Looks for a set of recursive calls that can be unrolled into a for loop with no repeated work. The optimized function stores intermediate results such that the procedure uses linear space. Returns @racket[#f] if an optimization cannot be found.}
 
 @section{Notes}
 
