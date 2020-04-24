@@ -9,7 +9,7 @@ modifying optimizations might be helpful in situations such as: the
 optimization is close to correct but not exact; the optimization can be
 made more general.
 
-Example - optimizing the fibonacci sequence with dynamic programming:
+Example - optimizing the Fibonacci sequence with dynamic programming:
 
 ```racket
 > (enable-optimizer-plugin! make-bottom-up-constant-space-procedure)
@@ -104,7 +104,7 @@ optimizations have to be explicitly enabled.
 
 Returns a thunk that runs an optimizer REPL for `function` when called.
 A non-interactive REPL can be created by passing `commands-to-execute`
-which will be executed sequentially by the repl.
+which will be executed sequentially by the REPL.
 
 ## 3. Optimizer REPL functions
 
@@ -183,7 +183,7 @@ Optimizer plugins look for optimizations.
 ```
 
 Looks for a set of recursive calls with redundant work that can be
-unrolled into a for loop with no repeated work. The produced optimizied
+unrolled into a for loop with no repeated work. The produced optimized
 function uses a constant amount of storage. Returns `#f` if an
 optimization cannot be found.
 

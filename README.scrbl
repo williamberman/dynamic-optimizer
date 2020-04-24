@@ -24,7 +24,7 @@ This is an educational framework for runtime optimization. The focus is on produ
                                   "additional-properties.rkt"))))
 
 @examples[#:eval my-evaluator
-          #:label "Example - optimizing the fibonacci sequence with dynamic programming:"
+          #:label "Example - optimizing the Fibonacci sequence with dynamic programming:"
           (enable-optimizer-plugin! make-bottom-up-constant-space-procedure)
           (define/optimizable (fib n)
             (cond ((= n 0) 0)
@@ -55,7 +55,7 @@ This is an educational framework for runtime optimization. The focus is on produ
 
 @defproc[(make-optimizer-repl [function optimizable-function?]
                               [commands-to-execute (or/c #f (listof any/c?))])
-         (-> void?)]{Returns a thunk that runs an optimizer REPL for @racket[function] when called. A non-interactive REPL can be created by passing @racket[commands-to-execute] which will be executed sequentially by the repl.}
+         (-> void?)]{Returns a thunk that runs an optimizer REPL for @racket[function] when called. A non-interactive REPL can be created by passing @racket[commands-to-execute] which will be executed sequentially by the REPL.}
 
 @section{Optimizer REPL functions}
 
@@ -82,7 +82,7 @@ All optimizer REPL functions are enabled while in an optimizer REPL session and 
 Optimizer plugins look for optimizations.
 
 @defproc[(make-bottom-up-constant-space-procedure [call-graph graph?] [function optimizable-function?])
-         (or/c procedure? #f)]{Looks for a set of recursive calls with redundant work that can be unrolled into a for loop with no repeated work. The produced optimizied function uses a constant amount of storage. Returns @racket[#f] if an optimization cannot be found.}
+         (or/c procedure? #f)]{Looks for a set of recursive calls with redundant work that can be unrolled into a for loop with no repeated work. The produced optimized function uses a constant amount of storage. Returns @racket[#f] if an optimization cannot be found.}
 
 @defproc[(make-bottom-up-non-constant-space-procedure [call-graph graph?] [function optimizable-function?])
          (or/c procedure? #f)]{Looks for a set of recursive calls that can be unrolled into a for loop with no repeated work. The optimized function stores intermediate results such that the procedure uses linear space. Returns @racket[#f] if an optimization cannot be found.}
