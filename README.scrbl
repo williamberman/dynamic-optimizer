@@ -23,6 +23,8 @@ This is an educational framework for runtime optimization. The focus is on produ
                                   "advice.rkt"
                                   "additional-properties.rkt"))))
 
+Optimizing the fibonacci sequence with dynamic programming.
+
 @examples[#:eval my-evaluator
           (enable-optimizer-plugin! make-bottom-up-constant-space-procedure)
           (define/optimizable (fib n)

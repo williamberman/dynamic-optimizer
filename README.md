@@ -9,6 +9,8 @@ modifying optimizations might be helpful in situations such as: the
 optimization is close to correct but not exact; the optimization can be
 made more general.
 
+Optimizing the fibonacci sequence with dynamic programming.
+
 Examples:
 
 ```racket
