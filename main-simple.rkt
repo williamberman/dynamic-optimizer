@@ -19,8 +19,8 @@
 ;; - prefix notation
 ;; - define
 ;; - Condition operator
-;; - Fibonacci sequence
 ;; - for loop
+;; - Fibonacci sequence
 
 ;; F_0 = 0
 ;; F_1 = 1
