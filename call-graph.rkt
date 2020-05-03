@@ -30,14 +30,18 @@
          base-case
          calculate
          call-graph->all-arguments-bottom-up
-         display-call-graph)
+         display-call-graph
+         display-call-graph-and-transpose)
 
 (define base-case 'base-case)
 (define calculate 'calculate)
 
 (struct a-call
   (arguments return-value children-hash)
-  #:transparent)
+  #:transparent
+  #:methods gen:custom-write
+  [(define (write-proc the-call port mode)
+     (fprintf port "~a -> ~a" (a-call-arguments the-call) (a-call-return-value the-call)))])
 
 (struct call-graph-builder
   (call-stack call-graph is-complete?)
@@ -225,4 +229,15 @@
   (call-with-output-file output-file-path
       (lambda (out)
         (display (graphviz call-graph) out))
-      #:exists 'replace))
+    #:exists 'replace))
+
+;; To convert the outputted dot files
+;; fswatch -0 /tmp/call-graph.dot | \
+;;        xargs -0 -I \{\} dot -Tpng -o/tmp/call-graph.png /tmp/call-graph.dot
+;; fswatch -0 /tmp/call-graph-transpose.dot | \
+;;        xargs -0 -I \{\} dot -Tpng -o/tmp/call-graph-transpose.png /tmp/call-graph-transpose.dot
+(define (display-call-graph-and-transpose call-graph)
+  (display-call-graph call-graph
+                      "/tmp/call-graph.dot")
+  (display-call-graph (transpose call-graph)
+                      "/tmp/call-graph-transpose.dot"))

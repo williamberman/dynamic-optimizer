@@ -97,7 +97,7 @@
     (if (= 0 (length the-available-optimizations))
         (displayln "There are no available optimizations")
         (begin
-          (displayln "Available optimizations")
+          (displayln "Optimizations are available for the following sets of arguments")
           (for ([args the-available-optimizations])
             (displayln args))))))
 
